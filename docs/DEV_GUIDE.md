@@ -160,3 +160,24 @@ Disciplina, etc.) sigue el mismo patrón que `modules/alumno`:
 - Toda operación de escritura relevante para trazabilidad institucional
   (alta, baja, edición, cambios de estado) debe llamar a
   `AuditService.registrar(...)`.
+
+## Backups
+
+`backup.ps1` (en la raíz) copia en `C:\backups\SIGAI-WS\<fecha_hora>\`:
+la base (`.bak`, verificado con `RESTORE VERIFYONLY`), el `.env` (sin la
+clave AES la base restaurada no se puede leer) y `storage/` comprimido.
+Conserva las últimas 10 copias. En la PC de desarrollo corre todos los días
+a las 21:00 desde el Programador de tareas (tarea "SIGAI-WS Backup"; si la
+PC estaba apagada, corre al prenderla).
+
+Esas copias quedan en el mismo disco: conviene llevar la última, cada tanto,
+a un pendrive o a una carpeta privada en la nube. **Nunca** subir el `.env` a
+un lugar público.
+
+Restaurar (con la aplicación detenida):
+
+```sql
+RESTORE DATABASE SIGAI_WS FROM DISK = N'C:\backups\SIGAI-WS\<fecha_hora>\SIGAI_WS_<fecha_hora>.bak' WITH REPLACE
+```
+
+y volver a poner el `.env` de esa misma copia en la raíz del proyecto.
