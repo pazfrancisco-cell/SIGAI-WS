@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Comunicados')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/portal-padres}" th:text="#{portalpadres.titulo}">Portal de Padres</a> &gt; <span th:text="#{comunicados.breadcrumb}">Comunicados</span></div>
+        <h1 th:text="#{comunicados.breadcrumb}">Comunicados</h1>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(comunicados)}">
+            <table>
+                <thead><tr><th th:text="#{comunicados.colAsunto}">Asunto</th><th th:text="#{alumnos.legajo.colFecha}">Fecha</th><th th:text="#{common.estado}">Estado</th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${comunicados}">
+                    <td data-label="Asunto"><a th:href="@{/portal-padres/comunicados/{id}(id=${c.id})}" th:text="${c.asunto}">-</a></td>
+                    <td data-label="Fecha" th:text="${#temporals.format(c.creadoEn,'dd/MM/yyyy HH:mm')}">-</td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${leidosIds.contains(c.id)}" th:text="#{portalpadres.leidoChip}">Leido</span>
+                        <span class="chip chip-naranja" th:unless="${leidosIds.contains(c.id)}" th:text="#{portalpadres.sinLeer}">Sin leer</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(comunicados)}"><h3 th:text="#{portalpadres.sinComunicados}">No hay comunicados</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

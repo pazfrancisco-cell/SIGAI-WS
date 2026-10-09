@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Resumen de Disciplina por Curso')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.disciplina}">Disciplina</span> &gt; <span th:text="#{nav.disciplina.resumenCurso}">Resumen por Curso</span></div>
+        <h1 th:text="#{disciplina.resumen.h1}">Resumen de Disciplina por Curso</h1>
+        <p class="texto-secundario" th:text="#{disciplina.resumen.subtitulo}">Observaciones y firmas acumuladas por alumno en el ciclo lectivo activo.</p>
+
+        <form method="get" th:action="@{/disciplina/resumen}" class="filtros-bar">
+            <div class="form-group">
+                <label th:text="#{common.cursoDivision}">Curso/Division</label>
+                <select name="cursoDivisionId" onchange="this.form.submit()">
+                    <option th:each="cd : ${cursosDivisiones}" th:value="${cd.id}" th:text="${cd.nombreCompleto}"
+                            th:selected="${cd.id == divisionSeleccionada}"></option>
+                </select>
+            </div>
+        </form>
+
+        <div class="tabla-wrapper" th:if="${trayectorias != null}">
+            <table>
+                <thead><tr><th>#</th><th th:text="#{alumnos.colApellidoNombre}">Apellido y Nombre</th><th th:text="#{disciplina.colObsAcum}">Observaciones Acumuladas</th><th th:text="#{disciplina.colFirmasAcum}">Firmas Acumuladas</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="acl, iter : ${trayectorias}">
+                    <td data-label="#" th:text="${iter.count}">1</td>
+                    <td data-label="Alumno" th:text="${acl.alumno.nombreCompleto}">-</td>
+                    <td data-label="Observaciones Acumuladas" class="valor-numerico" th:text="${acl.observacionesAcumuladas}">0</td>
+                    <td data-label="Firmas Acumuladas">
+                        <span class="chip chip-rojo" th:if="${acl.firmasAcumuladas >= 5}" th:text="${acl.firmasAcumuladas}">0</span>
+                        <span class="chip chip-naranja" th:if="${acl.firmasAcumuladas >= 3 and acl.firmasAcumuladas < 5}" th:text="${acl.firmasAcumuladas}">0</span>
+                        <span th:if="${acl.firmasAcumuladas < 3}" th:text="${acl.firmasAcumuladas}">0</span>
+                    </td>
+                    <td data-label="Acciones">
+                        <a th:href="@{/alumnos/{id}(id=${acl.alumno.id})}" class="btn btn-secondary compacto" th:text="#{asistencia.verLegajo}">Ver Legajo</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="estado-vacio" th:if="${trayectorias == null or trayectorias.isEmpty()}">
+            <h3 th:text="#{asistencia.vacioTrayectoria}">No hay alumnos con trayectoria registrada en esta division</h3>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

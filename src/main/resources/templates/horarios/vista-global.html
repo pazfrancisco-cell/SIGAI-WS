@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Vista Global de Horarios')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/horarios}" th:text="#{nav.horarios}">Horarios</a> &gt; <span th:text="#{horarios.vistaGlobal}">Vista Global</span></div>
+        <h1 th:text="#{horarios.vistaGlobal.h1}">Vista Global de Horarios</h1>
+        <p class="texto-secundario" th:text="#{horarios.vistaGlobalSubtitulo}">Resumen de solo lectura de todas las divisiones.</p>
+
+        <div th:each="division : ${cursosDivisiones}" th:with="slotsDivision=${slotsPorDivision.get(division.id)}" style="margin-bottom:24px">
+            <h3 th:text="${division.nombreCompleto}">1° A</h3>
+            <div class="tabla-wrapper">
+                <table class="tabla-grilla con-columna-fija horario-semanal">
+                    <thead>
+                    <tr>
+                        <th th:text="#{horarios.colPeriodo}">Periodo</th>
+                        <th th:text="#{horarios.dia.lunes}">Lunes</th><th th:text="#{horarios.dia.martes}">Martes</th><th th:text="#{horarios.dia.miercoles}">Miercoles</th><th th:text="#{horarios.dia.jueves}">Jueves</th><th th:text="#{horarios.dia.viernes}">Viernes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="periodo : ${periodos}">
+                        <td data-label="Periodo">
+                            <b th:text="${periodo.nombre}">Periodo 1</b><br/>
+                            <span class="texto-secundario" th:text="${#temporals.format(periodo.horaInicio,'HH:mm')} + ' - ' + ${#temporals.format(periodo.horaFin,'HH:mm')}"></span>
+                        </td>
+                        <td data-label="Dia" th:each="dia : ${#numbers.sequence(1,5)}"
+                            th:with="slot=${slotsDivision.get(dia + '-' + periodo.orden)}">
+                            <div th:if="${slot != null and slot.materia != null}">
+                                <span class="chip chip-verde" th:text="${slot.materia.nombre}">-</span><br/>
+                                <span class="texto-secundario" th:text="${slot.docente != null ? slot.docente.nombreCompleto : ''}"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="estado-vacio" th:if="${#lists.isEmpty(cursosDivisiones)}">
+            <h3 th:text="#{horarios.vacioCursos}">No hay cursos/divisiones configurados</h3>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

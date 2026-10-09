@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Panel')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.dashboard}">Panel</div>
+        <h1 th:text="#{dashboard.docente.h1}">Panel del Docente</h1>
+
+        <div class="card">
+            <h3 th:text="#{dashboard.docente.horarioHoy}">Horario de hoy</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(horarioHoy)}">
+                <table>
+                    <thead><tr><th th:text="#{dashboard.docente.colPeriodo}">Periodo</th><th th:text="#{dashboard.docente.colMateria}">Materia</th><th th:text="#{dashboard.docente.colCurso}">Curso/Division</th><th th:text="#{dashboard.docente.colAula}">Aula</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="s : ${horarioHoy}">
+                        <td data-label="Periodo" th:text="${s.periodoOrden}">-</td>
+                        <td data-label="Materia" th:text="${s.materia != null ? s.materia.nombre : '-'}">-</td>
+                        <td data-label="Curso" th:text="${s.cursoDivision.nombreCompleto}">-</td>
+                        <td data-label="Aula" th:text="${s.aula != null ? s.aula.nombre : '-'}">-</td>
+                        <td><a th:href="@{/asistencia/docente(materiaId=${s.materia != null ? s.materia.id : ''},cursoDivisionId=${s.cursoDivision.id})}" class="btn btn-ghost compacto" th:text="#{dashboard.docente.tomarAsistencia}">Tomar asistencia</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p th:if="${#lists.isEmpty(horarioHoy)}" class="texto-secundario" th:text="#{dashboard.docente.sinClases}">No hay clases programadas para hoy.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px" th:if="${countdownCuatrimestre != null}" th:with="urg=${countdownCuatrimestre.urgencia().name()}">
+            <h3 th:text="#{dashboard.countdownCuatrimestre(${countdownCuatrimestre.cuatrimestre()})}">Cierre del Cuatrimestre</h3>
+
+            <p class="valor" th:if="${countdownCuatrimestre.cerrado()}" th:text="#{dashboard.countdownCuatrimestre.cerrado}">Cerrado</p>
+            <p class="texto-secundario" th:if="${countdownCuatrimestre.cerrado()}" th:text="#{dashboard.countdownCuatrimestre.cerradoDesc}">El cuatrimestre ya fue cerrado</p>
+
+            <p class="valor" th:unless="${countdownCuatrimestre.cerrado()}"
+               th:text="${countdownCuatrimestre.diasRestantesOVencidos()} + ' ' + (${countdownCuatrimestre.diasRestantesOVencidos() == 1} ? #{dashboard.countdownCuatrimestre.dia} : #{dashboard.countdownCuatrimestre.dias})">0 dias</p>
+            <p class="texto-secundario texto-urgente" th:if="${not countdownCuatrimestre.cerrado() and countdownCuatrimestre.vencido()}"
+               th:text="#{dashboard.countdownCuatrimestre.vencido(${#temporals.format(countdownCuatrimestre.fechaCierre(),'dd/MM/yyyy')})}">Vencio el dd/MM/yyyy y todavia no se cerro</p>
+            <p class="texto-secundario" th:classappend="${urg == 'URGENTE'} ? 'texto-urgente' : ''"
+               th:if="${not countdownCuatrimestre.cerrado() and not countdownCuatrimestre.vencido()}"
+               th:text="#{dashboard.countdownCuatrimestre.fecha(${#temporals.format(countdownCuatrimestre.fechaCierre(),'dd/MM/yyyy')})}">Cierra el dd/MM/yyyy</p>
+        </div>
+
+        <div class="card" style="margin-top:16px" th:if="${evaluacionesSinCerrar != null and not #lists.isEmpty(evaluacionesSinCerrar)}">
+            <h3 style="color:var(--naranja-alerta)" th:text="#{dashboard.docente.evaluacionesSinCerrar.titulo}">Evaluaciones sin Cerrar</h3>
+            <p class="texto-secundario" th:text="#{dashboard.docente.evaluacionesSinCerrar.desc}">Evaluaciones a las que les falta cargar la nota de algun alumno</p>
+            <ul>
+                <li th:each="e : ${evaluacionesSinCerrar}">
+                    <a th:href="@{/calificaciones/cargar(materiaId=${e.evaluacion().materia.id},cursoDivisionId=${e.evaluacion().cursoDivision.id},cuatrimestre=${e.evaluacion().cuatrimestre})}"
+                       th:text="${e.evaluacion().materia.nombre} + ' - ' + ${e.evaluacion().titulo} + ' (' + ${e.notasCargadas()} + '/' + ${e.totalAlumnos()} + ')'">-</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card" style="margin-top:16px" th:if="${pendientesAptoFisico != null and not #lists.isEmpty(pendientesAptoFisico)}">
+            <h3 style="color:var(--naranja-alerta)" th:text="#{dashboard.docente.aptoFisicoPendiente}">Alumnos a mi cargo sin apto fisico</h3>
+            <ul>
+                <li th:each="alumno : ${pendientesAptoFisico}">
+                    <a th:href="@{/alumnos/{id}(id=${alumno.id})}" th:text="${alumno.nombreCompleto}">-</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <h3 th:text="#{dashboard.docente.accesosRapidos}">Accesos rapidos</h3>
+            <a th:href="@{/calificaciones/cargar}" class="btn btn-secondary" th:text="#{dashboard.docente.cargarCalificaciones}">Cargar Calificaciones</a>
+            <a th:href="@{/horarios/mi-horario}" class="btn btn-secondary" th:text="#{nav.horarios.miHorario}">Mi Horario</a>
+            <a th:href="@{/disciplina/nueva}" class="btn btn-secondary" th:text="#{nav.disciplina.registrar}">Registrar Observacion</a>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

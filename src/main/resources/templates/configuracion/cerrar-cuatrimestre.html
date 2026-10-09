@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Cerrar Cuatrimestre')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/configuracion/ciclos-lectivos}" th:text="#{nav.horarios.ciclosLectivos}">Ciclos Lectivos</a> &gt; <span th:text="#{cierre.cerrarCuatrimestre}">Cerrar Cuatrimestre</span></div>
+        <h1 th:text="#{cierre.cerrarCuatrimestre} + ' ' + ${numero}">-</h1>
+        <div class="alert-banner info" th:text="#{cierre.avisoSeccion64}">Verifica lo siguiente antes de confirmar: al cerrar, los docentes ya no podran cargar ni editar notas de este cuatrimestre sin una solicitud de correccion aprobada.</div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 th:text="#{cierre.docentesSinCarga}">Docentes sin ninguna evaluacion cargada</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(verificacion.docentesSinCarga())}">
+                <table>
+                    <thead><tr><th th:text="#{horarios.docente}">Docente</th><th th:text="#{common.materia}">Materia</th><th th:text="#{common.cursoDivision}">Curso/Division</th></tr></thead>
+                    <tbody>
+                    <tr th:each="d : ${verificacion.docentesSinCarga()}">
+                        <td th:text="${d.docente().nombreCompleto}">-</td>
+                        <td th:text="${d.materia().nombre}">-</td>
+                        <td th:text="${d.division().nombreCompleto}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario" th:if="${#lists.isEmpty(verificacion.docentesSinCarga())}" th:text="#{cierre.todosDocentesCargaron}">Todos los docentes cargaron al menos una evaluacion.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 th:text="#{cierre.alumnosSinNotas}">Alumnos con evaluaciones sin nota cargada</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(verificacion.alumnosSinNotas())}">
+                <table>
+                    <thead><tr><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{common.materia}">Materia</th><th th:text="#{common.cursoDivision}">Curso/Division</th></tr></thead>
+                    <tbody>
+                    <tr th:each="a : ${verificacion.alumnosSinNotas()}">
+                        <td th:text="${a.alumno().nombreCompleto}">-</td>
+                        <td th:text="${a.materia().nombre}">-</td>
+                        <td th:text="${a.division().nombreCompleto}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario" th:if="${#lists.isEmpty(verificacion.alumnosSinNotas())}" th:text="#{cierre.sinNotasPendientes}">No hay notas pendientes en las evaluaciones ya cargadas.</p>
+        </div>
+
+        <form th:action="@{/configuracion/ciclos-lectivos/cerrar-cuatrimestre/{numero}(numero=${numero})}" method="post"
+              th:attr="data-confirm=#{cierre.confirmCerrar}" data-confirm="Esta accion bloqueara la carga directa de notas del cuatrimestre. ¿Confirmar el cierre?">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="page-actions">
+                <a th:href="@{/configuracion/ciclos-lectivos}" class="btn btn-secondary" th:text="#{cierre.volverSinCerrar}">Volver sin cerrar</a>
+                <button type="submit" class="btn btn-danger" th:text="#{cierre.confirmarCierre}">Confirmar Cierre del Cuatrimestre</button>
+            </div>
+        </form>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

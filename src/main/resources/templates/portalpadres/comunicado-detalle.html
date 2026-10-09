@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Comunicado')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/portal-padres/comunicados}" th:text="#{comunicados.breadcrumb}">Comunicados</a> &gt; <span th:text="${comunicado.asunto}">Detalle</span></div>
+
+        <div class="card">
+            <div class="page-header">
+                <h1 th:text="${comunicado.asunto}">Asunto</h1>
+                <span class="texto-secundario" th:text="${#temporals.format(comunicado.creadoEn,'dd/MM/yyyy HH:mm')}">Fecha</span>
+            </div>
+            <p class="texto-secundario"><span th:text="#{comunicados.enviadoPor}">Enviado por</span> <strong th:text="${comunicado.autor.nombreCompleto}">Autor</strong></p>
+            <p th:text="${comunicado.contenido}" style="white-space:pre-wrap">Contenido</p>
+            <a th:if="${comunicado.adjuntoPath != null}" th:href="'/archivos?' + ${@firmaArchivoService.queryFirmado(comunicado.adjuntoPath)}"
+               target="_blank" class="btn btn-secondary compacto" th:text="#{comunicados.descargarAdjunto}">Descargar adjunto</a>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Catalogo de Pruebas Fisicas')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.educacionFisica}">Educacion Fisica</span> &gt; <span th:text="#{edfisica.catalogoPruebas}">Catalogo de Pruebas Fisicas</span></div>
+        <h1 th:text="#{edfisica.catalogoPruebas}">Catalogo de Pruebas Fisicas</h1>
+        <p class="texto-secundario" th:text="#{edfisica.catalogoPruebasHint}">Si dos pruebas son en realidad la misma actividad con nombres distintos (ej. "50 Metros" y "Carrera 50 metros"), fusionalas para no perder el historial de comparacion y evolucion.</p>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(catalogo)}">
+            <table>
+                <thead>
+                <tr>
+                    <th th:text="#{edfisica.nombrePrueba}">Nombre</th>
+                    <th th:text="#{edfisica.unidad}">Unidad</th>
+                    <th th:text="#{edfisica.colDireccion}">Direccion</th>
+                    <th th:text="#{edfisica.colUso}">Pruebas registradas</th>
+                    <th th:text="#{common.acciones}">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${catalogo}">
+                    <td data-label="Nombre" th:text="${item.definicion().nombre}">-</td>
+                    <td data-label="Unidad" th:text="${item.definicion().unidad}">-</td>
+                    <td data-label="Direccion">
+                        <span class="chip chip-verde" th:if="${item.definicion().mayorEsMejor}" th:text="#{edfisica.mayorEsMejor}">Mayor valor es mejor</span>
+                        <span class="chip chip-gris" th:unless="${item.definicion().mayorEsMejor}" th:text="#{edfisica.menorEsMejor}">Menor valor es mejor</span>
+                    </td>
+                    <td data-label="Uso" class="valor-numerico" th:text="${item.cantidadPruebas()}">0</td>
+                    <td data-label="Acciones">
+                        <form th:action="@{/educacion-fisica/catalogo-pruebas/fusionar}" method="post"
+                              style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"
+                              th:attr="data-confirm=#{edfisica.confirmFusionar}" th:if="${#lists.size(catalogo) > 1}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="descartarId" th:value="${item.definicion().id}"/>
+                            <select name="conservarId" style="max-width:220px">
+                                <option th:each="otro : ${catalogo}" th:if="${otro.definicion().id != item.definicion().id}"
+                                        th:value="${otro.definicion().id}" th:text="${otro.definicion().nombre}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-warning compacto" th:text="#{edfisica.fusionarCon}">Fusionar con...</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(catalogo)}"><h3 th:text="#{edfisica.sinPruebasEnCatalogo}">Todavia no hay pruebas fisicas en el catalogo.</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

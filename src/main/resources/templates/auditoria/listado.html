@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Auditoria del Sistema')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.auditoria}">Auditoria</div>
+        <div class="page-header">
+            <h1 th:text="#{auditoria.h1}">Auditoria del Sistema</h1>
+            <div class="page-actions">
+                <a th:href="@{/auditoria/exportar(usuarioId=${usuarioId},modulo=${modulo},accion=${accion},desde=${desde},hasta=${hasta})}"
+                   class="btn btn-secondary" th:text="#{auditoria.exportarCsv}">Exportar CSV</a>
+            </div>
+        </div>
+
+        <form method="get" th:action="@{/auditoria}" class="filtros-bar">
+            <div class="form-group">
+                <label th:text="#{auditoria.usuarioLabel}">Usuario</label>
+                <select name="usuarioId" onchange="this.form.submit()">
+                    <option value="" th:text="#{common.todos}">Todos</option>
+                    <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nombreCompleto}" th:selected="${u.id == usuarioId}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{auditoria.moduloLabel}">Modulo</label>
+                <select name="modulo" onchange="this.form.submit()">
+                    <option value="" th:text="#{common.todos}">Todos</option>
+                    <option th:each="m : ${modulos}" th:value="${m}" th:text="${m}" th:selected="${m == modulo}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{usuarios.colAccion}">Accion</label>
+                <select name="accion" onchange="this.form.submit()">
+                    <option value="" th:text="#{common.todas}">Todas</option>
+                    <option th:each="a : ${acciones}" th:value="${a}" th:text="${a}" th:selected="${a == accion}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{edfisica.desde}">Desde</label>
+                <input type="date" name="desde" th:value="${desde}"/>
+            </div>
+            <div class="form-group">
+                <label th:text="#{edfisica.hasta}">Hasta</label>
+                <input type="date" name="hasta" th:value="${hasta}"/>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+                <button type="submit" class="btn btn-primary compacto" th:text="#{common.filtrar}">Filtrar</button>
+            </div>
+        </form>
+
+        <div class="tabla-wrapper">
+            <table class="tarjetas-en-tablet">
+                <thead><tr><th th:text="#{alumnos.legajo.colFecha}">Fecha</th><th th:text="#{auditoria.usuarioLabel}">Usuario</th><th th:text="#{usuarios.colIp}">IP</th><th th:text="#{auditoria.moduloLabel}">Modulo</th><th th:text="#{usuarios.colAccion}">Accion</th><th th:text="#{auditoria.colEntidad}">Entidad</th><th th:text="#{auditoria.colRegistro}">Registro</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${registros.content}">
+                    <td data-label="Fecha" th:text="${#temporals.format(r.timestamp,'dd/MM/yyyy HH:mm:ss')}">-</td>
+                    <td data-label="Usuario" th:text="${r.usuarioEmail}">-</td>
+                    <td data-label="IP" th:text="${r.ipAddress}">-</td>
+                    <td data-label="Modulo" th:text="${r.modulo}">-</td>
+                    <td data-label="Accion" th:text="${r.accion}">-</td>
+                    <td data-label="Entidad" th:text="${r.entidad}">-</td>
+                    <td data-label="Registro" th:text="${r.registroId}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${registros.content.isEmpty()}">
+            <h3 th:text="#{auditoria.vacioFiltros}">No hay registros de auditoria con estos filtros</h3>
+        </div>
+
+        <div class="texto-secundario" style="margin-top:12px" th:if="${registros.totalPages > 1}">
+            <span th:text="#{common.pagina}">Pagina</span> <span th:text="${registros.number + 1}">1</span> <span th:text="#{common.de}">de</span> <span th:text="${registros.totalPages}">1</span> -
+            <a th:if="${registros.number > 0}" th:href="@{/auditoria(pagina=${registros.number - 1},usuarioId=${usuarioId},modulo=${modulo},accion=${accion},desde=${desde},hasta=${hasta})}" th:text="#{common.anterior}">Anterior</a>
+            <a th:if="${registros.number + 1 < registros.totalPages}" th:href="@{/auditoria(pagina=${registros.number + 1},usuarioId=${usuarioId},modulo=${modulo},accion=${accion},desde=${desde},hasta=${hasta})}" th:text="#{common.siguiente}">Siguiente</a>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
+     th:fragment="topbar" class="topbar">
+
+    <button type="button" class="hamburger" aria-label="Abrir menu">&#9776;</button>
+    <button type="button" class="sidebar-toggle" id="btn-colapsar-sidebar" aria-label="Colapsar menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path>
+        </svg>
+    </button>
+
+    <img th:src="@{/img/logo.jpg}" alt="Wellspring School" class="logo"/>
+    <div class="marca">
+        <div class="nombre" th:text="#{app.institucion}">Wellspring School</div>
+        <div class="bajada" th:text="#{app.bajada}">Gestion Academica</div>
+    </div>
+
+    <span class="topbar-relleno"></span>
+
+    <a th:href="@{/notificaciones}" class="btn-alertas" th:title="#{notificaciones.titulo}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 9.5a6 6 0 1 1 12 0V14l1.8 3H4.2L6 14z"></path>
+            <path d="M10 20.2a2.2 2.2 0 0 0 4 0"></path>
+        </svg>
+        <span class="etiqueta" th:text="#{notificaciones.titulo}">Notificaciones</span>
+        <span class="badge-alertas" th:if="${notificacionesNoLeidasCount != null and notificacionesNoLeidasCount > 0}"
+              th:text="${notificacionesNoLeidasCount}">0</span>
+    </a>
+
+    <a th:href="@{/alertas}" class="btn-alertas" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M12 3.4 2.6 20.6h18.8z"></path><path d="M12 10v4.4"></path><path d="M12 17.6v.2"></path>
+        </svg>
+        <span class="etiqueta" th:text="#{nav.alertas}">Alertas</span>
+        <span class="badge-alertas" th:if="${alertasActivasCount != null and alertasActivasCount > 0}"
+              th:text="${alertasActivasCount}">0</span>
+    </a>
+
+    <button type="button" class="theme-toggle" id="btn-tema" aria-label="Cambiar tema">
+        <span id="icono-tema">&#127769;</span>
+    </button>
+
+    <div class="selector-idioma">
+        <a th:href="@{/?lang=es}" th:classappend="${#locale.language == 'es'} ? 'activo'" th:title="#{idioma.espanol}">ES</a>
+        <a th:href="@{/?lang=en}" th:classappend="${#locale.language == 'en'} ? 'activo'" th:title="#{idioma.ingles}">EN</a>
+    </div>
+
+    <div class="topbar-user" id="menu-usuario">
+        <button type="button" class="avatar-toggle" id="btn-avatar" aria-haspopup="true">
+            <div class="avatar" th:text="${#strings.substring(#authentication.name,0,1)}">U</div>
+            <div class="datos">
+                <div class="nombre" sec:authentication="principal.usuario.nombreCompleto">Nombre Completo</div>
+                <div class="rol" th:text="${#strings.listJoin(#authentication.principal.usuario.roles.![etiqueta], ', ')}">Rol</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M6 9.5 12 15.5 18 9.5"></path>
+            </svg>
+        </button>
+        <div class="dropdown-usuario" id="dropdown-usuario">
+            <div class="dropdown-usuario-header">
+                <div sec:authentication="principal.usuario.nombreCompleto">Nombre Completo</div>
+                <div class="texto-secundario" sec:authentication="name">usuario@wellspringschool.edu.ar</div>
+            </div>
+            <a th:href="@{/perfil}" th:text="#{topbar.miPerfil}">Mi perfil</a>
+            <a th:href="@{/cambiar-password}" th:text="#{topbar.cambiarPassword}">Cambiar contraseña</a>
+            <!-- En celular y tablet, tema e idioma salen de la barra y quedan aca -->
+            <div class="solo-compacto">
+                <button type="button" class="link" data-toggle-tema th:text="#{topbar.cambiarTema}">Cambiar tema</button>
+                <div class="dropdown-idioma">
+                    <a th:href="@{/?lang=es}" th:classappend="${#locale.language == 'es'} ? 'activo'" th:text="#{idioma.espanol}">Español</a>
+                    <a th:href="@{/?lang=en}" th:classappend="${#locale.language == 'en'} ? 'activo'" th:text="#{idioma.ingles}">English</a>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="link" th:text="#{topbar.cerrarSesion}">Cerrar sesion</button>
+            </form>
+        </div>
+    </div>
+</div>

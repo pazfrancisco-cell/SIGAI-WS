@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Acceso denegado')}"></head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card" style="text-align:center">
+        <h1>403</h1>
+        <p th:text="#{error.403.mensaje}">No tenes permisos para acceder a esta seccion.</p>
+        <a class="btn btn-primary" th:href="@{/}" th:text="#{error.volverInicio}">Volver al inicio</a>
+    </div>
+</div>
+</body>
+</html>

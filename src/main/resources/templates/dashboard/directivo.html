@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head th:replace="~{fragments/head :: head(titulo='Panel')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.dashboard}">Panel</div>
+        <h1 th:text="#{dashboard.directivo.h1}">Panel Institucional</h1>
+
+        <h2 th:text="#{dashboard.pendientes}">Lo que hay que resolver hoy</h2>
+        <div class="lista-pendientes" th:if="${enCondicionLibre > 0 or alertasActivas > 0 or solicitudesPendientes > 0 or alumnosSinCurso > 0}">
+            <div class="pendiente critico" th:if="${alumnosSinCurso > 0}">
+                <span class="punto"></span>
+                <span class="texto">
+                    <strong th:text="#{dashboard.pendiente.sinCurso(${alumnosSinCurso})}">Hay 40 alumnos sin curso en el ciclo lectivo activo</strong>
+                    <span class="texto-secundario" th:text="#{dashboard.pendiente.sinCurso.detalle}">Indica en que curso queda cada uno con la promocion de alumnos</span>
+                </span>
+                <a th:href="@{/configuracion/promocion}" class="btn btn-danger compacto" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO')"
+                   th:text="#{dashboard.pendiente.promover}">Promover alumnos</a>
+            </div>
+            <div class="pendiente critico" th:if="${alertasActivas > 0}">
+                <span class="punto"></span>
+                <span class="texto">
+                    <strong th:text="#{dashboard.pendiente.alertas(${alertasActivas})}">4 alertas sin atender</strong>
+                    <span class="texto-secundario" th:text="#{dashboard.pendiente.alertas.detalle}">Revisalas en el centro de alertas</span>
+                </span>
+                <a th:href="@{/alertas}" class="btn btn-danger compacto" th:text="#{dashboard.pendiente.revisar}">Revisarlas</a>
+            </div>
+            <div class="pendiente atencion" th:if="${solicitudesPendientes > 0}">
+                <span class="punto"></span>
+                <span class="texto">
+                    <strong th:text="#{dashboard.pendiente.solicitudes(${solicitudesPendientes})}">2 pedidos de correccion de notas</strong>
+                    <span class="texto-secundario" th:text="#{dashboard.pendiente.solicitudes.detalle}">Estan esperando tu aprobacion</span>
+                </span>
+                <a th:href="@{/calificaciones/solicitudes}" class="btn btn-warning compacto" th:text="#{dashboard.pendiente.revisar}">Revisarlas</a>
+            </div>
+            <div class="pendiente" th:if="${enCondicionLibre > 0}">
+                <span class="punto"></span>
+                <span class="texto">
+                    <strong th:text="#{dashboard.pendiente.condicionLibre(${enCondicionLibre})}">3 alumnos en Condicion Libre</strong>
+                    <span class="texto-secundario" th:text="#{dashboard.pendiente.condicionLibre.detalle}">Puede requerir aviso a la familia</span>
+                </span>
+                <a th:href="@{/alumnos(condicionLibre=true)}" class="btn btn-secondary compacto" th:text="#{dashboard.directivo.verListado}">Ver listado</a>
+            </div>
+        </div>
+        <div class="estado-vacio" th:if="${enCondicionLibre == 0 and alertasActivas == 0 and solicitudesPendientes == 0 and alumnosSinCurso == 0}">
+            <h3 th:text="#{dashboard.pendientes.vacio}">No hay pendientes por ahora</h3>
+        </div>
+
+        <h2 th:text="#{dashboard.queHacer}">¿Que queres hacer?</h2>
+        <div class="grilla-tareas">
+            <a th:href="@{/asistencia/preceptor}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+                <span class="icono-tarea verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5H6.6A1.6 1.6 0 0 0 5 6.1V20a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 20V6.1a1.6 1.6 0 0 0-1.6-1.6H15"/><rect x="9" y="2.6" width="6" height="3.8" rx="1"/><path d="M8.6 13.6 11 16l4.4-4.8"/></svg></span>
+                <span class="titulo" th:text="#{tarea.asistencia}">Tomar asistencia</span>
+                <span class="desc" th:text="#{tarea.asistencia.desc}">Marca quien vino hoy en un curso.</span>
+            </a>
+            <a th:href="@{/calificaciones/cargar}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','DOCENTE')">
+                <span class="icono-tarea azul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span>
+                <span class="titulo" th:text="#{tarea.notas}">Cargar notas</span>
+                <span class="desc" th:text="#{tarea.notas.desc}">Registra la nota de una evaluacion.</span>
+            </a>
+            <a th:href="@{/alumnos}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+                <span class="icono-tarea gris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.6 4.6"/></svg></span>
+                <span class="titulo" th:text="#{tarea.buscarAlumno}">Buscar un alumno</span>
+                <span class="desc" th:text="#{tarea.buscarAlumno.desc}">Abri el legajo completo de un alumno.</span>
+            </a>
+            <a th:href="@{/mensajes/comunicado/nuevo}" class="tarjeta-tarea">
+                <span class="icono-tarea violeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.4h16v11.2H9.6L4 20.6z"/></svg></span>
+                <span class="titulo" th:text="#{tarea.comunicado}">Escribir un comunicado</span>
+                <span class="desc" th:text="#{tarea.comunicado.desc}">Enviale un aviso a las familias.</span>
+            </a>
+            <a th:href="@{/disciplina/nueva}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')">
+                <span class="icono-tarea naranja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4 2.6 20.6h18.8z"/><path d="M12 10v4.4"/><path d="M12 17.6v.2"/></svg></span>
+                <span class="titulo" th:text="#{tarea.observacion}">Registrar una observacion</span>
+                <span class="desc" th:text="#{tarea.observacion.desc}">Deja constancia de un hecho disciplinario.</span>
+            </a>
+            <a th:href="@{/reportes}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea rojo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20.4h16.4"/><path d="M6.6 20.4V11"/><path d="M12 20.4V4.4"/><path d="M17.4 20.4v-6.6"/></svg></span>
+                <span class="titulo" th:text="#{tarea.reporte}">Generar un reporte</span>
+                <span class="desc" th:text="#{tarea.reporte.desc}">PDF con los datos actuales del sistema.</span>
+            </a>
+        </div>
+
+        <h2 th:text="#{dashboard.comoViene}">Como viene la escuela</h2>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{dashboard.directivo.condicionLibre}">Alumnos en Condicion Libre</span>
+                    <span class="icono-badge icono-badge-rojo">&#9888;</span>
+                </div>
+                <p class="valor" th:text="${enCondicionLibre}">0</p>
+                <div class="delta alerta"><a th:href="@{/alumnos(condicionLibre=true)}" th:text="#{dashboard.directivo.verListado}">Ver listado</a></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{dashboard.directivo.alertasActivas}">Alertas Activas</span>
+                    <span class="icono-badge icono-badge-naranja">&#128276;</span>
+                </div>
+                <p class="valor" th:text="${alertasActivas}">0</p>
+                <div class="delta"><a th:href="@{/alertas}" th:text="#{dashboard.directivo.verCentroAlertas}">Ver centro de alertas</a></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{dashboard.directivo.solicitudesPendientes}">Solicitudes de Correccion Pendientes</span>
+                    <span class="icono-badge icono-badge-azul">&#9999;</span>
+                </div>
+                <p class="valor" th:text="${solicitudesPendientes}">0</p>
+                <div class="delta info"><a th:href="@{/calificaciones/solicitudes}" th:text="#{dashboard.directivo.verSolicitudes}">Ver solicitudes</a></div>
+            </div>
+            <div class="stat-card" th:if="${asistenciaInstitucional != null and asistenciaInstitucional.totalRegistros() > 0}">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{dashboard.asistenciaInstitucional}">Asistencia Institucional</span>
+                    <span class="icono-badge icono-badge-verde">&#128197;</span>
+                </div>
+                <p class="valor" th:text="${asistenciaInstitucional.porcentajePresente()} + '%'">0%</p>
+                <div class="delta" th:text="#{dashboard.asistenciaInstitucional.desc}">% de presentes sobre los registros del ciclo lectivo activo</div>
+            </div>
+            <div class="stat-card" th:if="${countdownCuatrimestre != null}" th:with="urg=${countdownCuatrimestre.urgencia().name()}">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{dashboard.countdownCuatrimestre(${countdownCuatrimestre.cuatrimestre()})}">Cierre del Cuatrimestre</span>
+                    <span class="icono-badge icono-badge-verde" th:if="${countdownCuatrimestre.cerrado()}">&#9989;</span>
+                    <span class="icono-badge icono-badge-rojo" th:if="${not countdownCuatrimestre.cerrado() and urg == 'URGENTE'}">&#9203;</span>
+                    <span class="icono-badge icono-badge-naranja" th:if="${not countdownCuatrimestre.cerrado() and urg == 'PROXIMO'}">&#9203;</span>
+                    <span class="icono-badge icono-badge-azul" th:if="${not countdownCuatrimestre.cerrado() and urg == 'NORMAL'}">&#9203;</span>
+                </div>
+                <p class="valor" th:if="${countdownCuatrimestre.cerrado()}" th:text="#{dashboard.countdownCuatrimestre.cerrado}">Cerrado</p>
+                <div class="delta positivo" th:if="${countdownCuatrimestre.cerrado()}" th:text="#{dashboard.countdownCuatrimestre.cerradoDesc}">El cuatrimestre ya fue cerrado</div>
+
+                <p class="valor" th:unless="${countdownCuatrimestre.cerrado()}"
+                   th:text="${countdownCuatrimestre.diasRestantesOVencidos()} + ' ' + (${countdownCuatrimestre.diasRestantesOVencidos() == 1} ? #{dashboard.countdownCuatrimestre.dia} : #{dashboard.countdownCuatrimestre.dias})">0 dias</p>
+                <div class="delta alerta" th:if="${not countdownCuatrimestre.cerrado() and countdownCuatrimestre.vencido()}"
+                     th:text="#{dashboard.countdownCuatrimestre.vencido(${#temporals.format(countdownCuatrimestre.fechaCierre(),'dd/MM/yyyy')})}">Vencio el dd/MM/yyyy y todavia no se cerro</div>
+                <div class="delta" th:classappend="${urg == 'URGENTE'} ? 'alerta' : (${urg == 'PROXIMO'} ? 'info' : '')"
+                     th:if="${not countdownCuatrimestre.cerrado() and not countdownCuatrimestre.vencido()}"
+                     th:text="#{dashboard.countdownCuatrimestre.fecha(${#temporals.format(countdownCuatrimestre.fechaCierre(),'dd/MM/yyyy')})}">Cierra el dd/MM/yyyy</div>
+            </div>
+        </div>
+
+        <div class="stat-grid" style="margin-top:16px">
+            <div class="card">
+                <h3 th:text="#{dashboard.disciplinaSemanal.titulo}">Disciplina de la Semana</h3>
+                <p class="texto-secundario" th:text="#{dashboard.disciplinaSemanal.desc}">Observaciones registradas en los ultimos 7 dias</p>
+                <p class="valor" th:text="${metricasDisciplinarias.total()}">0</p>
+                <div th:if="${not #maps.isEmpty(metricasDisciplinarias.porCategoria())}" style="margin-top:8px">
+                    <div th:each="entrada : ${metricasDisciplinarias.porCategoria()}" class="texto-secundario">
+                        <span th:text="${entrada.key} + ': ' + ${entrada.value}">Categoria: 0</span>
+                    </div>
+                </div>
+                <p th:if="${metricasDisciplinarias.total() == 0}" class="texto-secundario" th:text="#{dashboard.disciplinaSemanal.sinDatos}">Sin observaciones esta semana</p>
+            </div>
+            <div class="card">
+                <h3 th:text="#{dashboard.proximosUmbral.titulo}">Alumnos proximos a Condicion Libre</h3>
+                <p class="texto-secundario" th:text="#{dashboard.proximosUmbral.desc}">Entre 17 y 20 faltas acumuladas en el ciclo activo</p>
+                <div th:if="${alumnosProximosAlUmbral != null and not #lists.isEmpty(alumnosProximosAlUmbral)}" class="lista-items">
+                    <a th:each="a : ${alumnosProximosAlUmbral}" th:href="@{/alumnos/{id}(id=${a.id})}" class="item-lista">
+                        <span th:text="${a.nombreCompleto}">Alumno</span>
+                    </a>
+                </div>
+                <p th:if="${alumnosProximosAlUmbral == null or #lists.isEmpty(alumnosProximosAlUmbral)}" class="texto-secundario" th:text="#{dashboard.proximosUmbral.sinDatos}">Ningun alumno en este rango por ahora</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <div class="page-header">
+                <h3 th:text="#{dashboard.directivo.comunicados}">Comunicados a Padres</h3>
+                <div class="page-actions">
+                    <a th:href="@{/mensajes/comunicado}" class="btn btn-secondary compacto" th:text="#{dashboard.directivo.verTodos}">Ver todos</a>
+                    <a th:href="@{/mensajes/comunicado/nuevo}" class="btn btn-primary compacto" th:text="#{dashboard.directivo.nuevoComunicado}">+ Nuevo Comunicado</a>
+                </div>
+            </div>
+            <div class="lista-items" th:if="${not #lists.isEmpty(comunicadosRecientes)}">
+                <a th:each="c : ${comunicadosRecientes}" th:href="@{/mensajes/comunicado/{id}(id=${c.id})}"
+                   th:with="resumen=${resumenesComunicados.get(c.id)}"
+                   class="item-lista">
+                    <span>
+                        <strong th:text="${c.asunto}">Asunto</strong><br/>
+                        <span class="texto-secundario" th:text="${c.autor.nombreCompleto} + ' - ' + ${#temporals.format(c.creadoEn,'dd/MM/yyyy HH:mm')}">Autor y fecha</span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:10px">
+                        <span class="barra-lectura">
+                            <span th:style="'width:' + ${resumen.audiencia() > 0 ? (resumen.leidos() * 100 / resumen.audiencia()) : 0} + '%'"></span>
+                        </span>
+                        <span class="chip" th:classappend="${resumen.audiencia() > 0 and resumen.leidos() == resumen.audiencia()} ? 'chip-verde' : 'chip-gris'"
+                              th:text="#{dashboard.directivo.leido(${resumen.leidos()}, ${resumen.audiencia()})}">Leido 0 / 0</span>
+                    </span>
+                </a>
+            </div>
+            <div class="estado-vacio" th:if="${#lists.isEmpty(comunicadosRecientes)}"><h3 th:text="#{dashboard.directivo.sinComunicados}">Todavia no se enviaron comunicados</h3></div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

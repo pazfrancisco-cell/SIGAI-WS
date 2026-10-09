@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Materias')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.configuracion}">Configuracion</span> &gt; <span th:text="#{nav.materias.materias}">Materias</span></div>
+        <div class="page-header">
+            <h1 th:text="#{nav.materias.materias}">Materias</h1>
+            <div class="page-actions"><a th:href="@{/configuracion/materias/nuevo}" class="btn btn-primary" th:text="#{materias.nueva}">+ Nueva Materia</a></div>
+        </div>
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(materias)}">
+            <table>
+                <thead><tr><th th:text="#{edfisica.colNombre}">Nombre</th><th th:text="#{materias.colCursosDivisiones}">Cursos/Divisiones</th><th th:text="#{common.estado}">Estado</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="m : ${materias}">
+                    <td data-label="Nombre" th:text="${m.nombre}">Materia</td>
+                    <td data-label="Cursos/Divisiones">
+                        <span class="chip chip-gris" th:each="cd : ${m.cursosDivisiones}" th:text="${cd.nombreCompleto}" style="margin-right:4px"></span>
+                    </td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${m.activa}" th:text="#{materias.seDicta}">Se dicta</span>
+                        <span class="chip chip-gris" th:unless="${m.activa}" th:text="#{materias.sinDictar}">Sin dictar este año</span>
+                    </td>
+                    <td data-label="Acciones"><a th:href="@{/configuracion/materias/{id}/editar(id=${m.id})}" class="btn btn-icon">&#9998;</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(materias)}"><h3 th:text="#{materias.vacio}">No hay materias cargadas</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

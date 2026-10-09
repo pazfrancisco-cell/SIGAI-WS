@@ -1,0 +1,13 @@
+<head xmlns:th="http://www.thymeleaf.org" th:fragment="head(titulo)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <script>
+        (function () {
+            if (localStorage.getItem("sigai_tema") === "oscuro") {
+                document.documentElement.setAttribute("data-theme", "oscuro");
+            }
+        })();
+    </script>
+    <title th:text="${titulo} + ' - SIGAI-WS'">SIGAI-WS</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>

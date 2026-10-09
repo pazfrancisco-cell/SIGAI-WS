@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Solicitudes de Correccion')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.calificaciones}">Calificaciones</span> &gt; <span th:text="#{nav.calificaciones.solicitudes}">Solicitudes de Correccion</span></div>
+        <h1 th:text="#{calificaciones.solicitudes.h1}">Solicitudes de Correccion de Nota</h1>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(solicitudes)}">
+            <table>
+                <thead><tr><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{common.materia}">Materia</th><th th:text="#{calificaciones.colNotaActual}">Nota actual</th><th th:text="#{calificaciones.colNotaPropuesta}">Nota propuesta</th><th th:text="#{calificaciones.colJustificacion}">Justificacion</th><th th:text="#{calificaciones.colSolicitadoPor}">Solicitado por</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${solicitudes}">
+                    <td data-label="Alumno" th:text="${s.nota.alumno.nombreCompleto}">-</td>
+                    <td data-label="Materia" th:text="${s.nota.evaluacion.materia.nombre}">-</td>
+                    <td data-label="Nota actual" th:text="${s.notaAnterior}">-</td>
+                    <td data-label="Nota propuesta" th:text="${s.notaPropuesta}">-</td>
+                    <td data-label="Justificacion" th:text="${s.justificacion}">-</td>
+                    <td data-label="Solicitado por" th:text="${s.solicitadoPor.nombreCompleto}">-</td>
+                    <td data-label="Acciones">
+                        <form th:action="@{/calificaciones/solicitudes/{id}/aprobar(id=${s.id})}" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-success compacto" th:text="#{calificaciones.aprobar}">Aprobar</button>
+                        </form>
+                        <form th:action="@{/calificaciones/solicitudes/{id}/rechazar(id=${s.id})}" method="post" style="display:inline-flex;gap:4px">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="text" name="motivo" th:placeholder="#{calificaciones.motivoPlaceholder}" placeholder="Motivo" style="height:28px;width:100px"/>
+                            <button type="submit" class="btn btn-danger compacto" th:text="#{calificaciones.rechazar}">Rechazar</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(solicitudes)}"><h3 th:text="#{calificaciones.vacioSolicitudes}">No hay solicitudes pendientes</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

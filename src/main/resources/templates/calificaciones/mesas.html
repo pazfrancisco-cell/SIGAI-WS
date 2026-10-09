@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Mesas de examen')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb" th:text="#{mesas.titulo}">Mesas de examen</div>
+        <div class="page-header">
+            <div>
+                <h1 th:text="#{mesas.titulo}">Mesas de examen</h1>
+                <p class="bajada" th:text="#{mesas.bajada(${notaMinima})}">Se aprueba con 7.</p>
+            </div>
+            <div class="page-actions" th:if="${esGestion and cicloActivo != null}">
+                <form th:action="@{/mesas/sincronizar}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-secondary" th:title="#{mesas.sincronizar.ayuda}"
+                            th:text="#{mesas.sincronizar(${#strings.toString(cicloActivo.anio)})}">Actualizar materias adeudadas</button>
+                </form>
+            </div>
+        </div>
+
+        <form class="filtros-bar" method="get" th:action="@{/mesas}">
+            <div class="form-group">
+                <label th:text="#{mesas.turno}">Turno</label>
+                <select name="turno" onchange="this.form.submit()">
+                    <option th:each="t : ${turnos}" th:value="${t}" th:selected="${t == turno}" th:text="#{'mesas.turno.' + ${t}}">Diciembre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{mesas.fecha}">Fecha de la mesa</label>
+                <input type="date" name="fecha" th:value="${fecha}" th:max="${hoy}" onchange="this.form.submit()"/>
+            </div>
+            <div class="form-group">
+                <label th:text="#{mesas.materia}">Materia</label>
+                <select name="materiaId" onchange="this.form.submit()">
+                    <option value="" th:text="#{mesas.todas}">Todas</option>
+                    <option th:each="m : ${materias}" th:value="${m.id}" th:selected="${m.id == materiaId}" th:text="${m.nombre}">Matematica</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{mesas.anio}">Año</label>
+                <select name="anioCurso" onchange="this.form.submit()">
+                    <option value="" th:text="#{mesas.todos}">Todos</option>
+                    <option th:each="n : ${#numbers.sequence(1,6)}" th:value="${n}" th:selected="${n == anioCurso}" th:text="${n + '°'}">1°</option>
+                </select>
+            </div>
+        </form>
+
+        <div class="estado-vacio" th:if="${#lists.isEmpty(filas)}">
+            <div class="icono">&#9989;</div>
+            <h3 th:text="#{mesas.vacio}">No hay materias adeudadas para rendir con estos filtros.</h3>
+            <p class="texto-secundario" th:text="#{mesas.vacio.detalle}">Se generan al cerrar el 2° cuatrimestre.</p>
+        </div>
+
+        <form th:unless="${#lists.isEmpty(filas)}" th:action="@{/mesas}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="turno" th:value="${turno}"/>
+            <input type="hidden" name="fecha" th:value="${fecha}"/>
+            <input type="hidden" name="materiaId" th:value="${materiaId}"/>
+            <input type="hidden" name="anioCurso" th:value="${anioCurso}"/>
+            <div class="tabla-wrapper">
+                <table>
+                    <thead><tr>
+                        <th th:text="#{mesas.colAlumno}">Alumno</th>
+                        <th th:text="#{mesas.colMateria}">Materia adeudada</th>
+                        <th th:text="#{mesas.colPromedio}">Promedio anual</th>
+                        <th th:text="#{common.estado}">Estado</th>
+                        <th th:text="#{mesas.colNota}">Nota</th>
+                        <th th:text="#{mesas.colAusente}">Ausente</th>
+                    </tr></thead>
+                    <tbody>
+                    <tr th:each="f, it : ${filas}" th:with="a=${f.adeudada()}, n=${f.notaCargada()}">
+                        <td data-label="Alumno">
+                            <a th:href="@{/alumnos/{id}(id=${a.alumno.id})}" th:text="${a.alumno.nombreCompleto}">Alumno</a>
+                            <input type="hidden" th:name="|cargas[${it.index}].adeudadaId|" th:value="${a.id}"/>
+                        </td>
+                        <td data-label="Materia" th:text="${a.descripcion}">Matematica (2°, 2026)</td>
+                        <td data-label="Promedio" th:text="${a.promedioAnual}">5.5</td>
+                        <td data-label="Estado">
+                            <span class="chip chip-verde" th:if="${a.estado.name() == 'APROBADA'}" th:text="#{mesas.estado.aprobada}">Aprobada</span>
+                            <span class="chip chip-naranja" th:if="${a.estado.name() == 'PENDIENTE'}" th:text="#{mesas.estado.pendiente}">Adeudada</span>
+                        </td>
+                        <td data-label="Nota">
+                            <input type="number" min="1" max="10" step="0.1" style="width:90px"
+                                   th:name="|cargas[${it.index}].nota|" th:value="${n != null ? n.nota : ''}"/>
+                        </td>
+                        <td data-label="Ausente">
+                            <input type="checkbox" value="true" th:name="|cargas[${it.index}].ausente|" th:checked="${n != null and n.ausente}"/>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario" style="margin:8px 0" th:text="#{mesas.ayudaCarga}">Deja vacia la nota de quien no se presento a esta mesa.</p>
+            <button type="submit" class="btn btn-primary" th:text="#{mesas.guardar}">Guardar mesa</button>
+        </form>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

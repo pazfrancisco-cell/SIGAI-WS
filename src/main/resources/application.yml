@@ -1,0 +1,108 @@
+# Configuracion base, comun a todos los perfiles.
+# Los valores sensibles se resuelven via variables de entorno (ver .env.example).
+spring:
+  application:
+    name: sigai-ws
+
+  profiles:
+    active: ${SIGAI_PROFILE:dev}
+
+  datasource:
+    # DB_URL es una via de escape para casos que el armado por partes de abajo no
+    # cubre (instancias con nombre, autenticacion de Windows, etc.). Si se define
+    # DB_URL explicitamente, tiene prioridad; si no, se arma con host/puerto/DB.
+    url: ${DB_URL:jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:sigai_ws};encrypt=${DB_ENCRYPT:true};trustServerCertificate=${DB_TRUST_CERT:true}}
+    # Vacios por defecto: con integratedSecurity=true en DB_URL, el driver los ignora.
+    username: ${DB_USER:}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      # El esquema SIEMPRE se gestiona via Flyway, nunca por Hibernate. "validate" es
+      # una capa extra de verificacion opcional en el arranque; se puede desactivar
+      # (JPA_DDL_AUTO=none) contra SQL Server viejos (<=2008 R2) que no exponen
+      # INFORMATION_SCHEMA.SEQUENCES, vista que Hibernate 6 consulta al validar.
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    # Habilitado: varias vistas Thymeleaf navegan relaciones @ManyToOne LAZY
+    # (ej. AlumnoCicloLectivo.cursoDivision) directamente en el template. Con
+    # open-in-view=false esas lecturas fallan con LazyInitializationException
+    # porque la sesion de Hibernate ya se cerro antes de renderizar la vista.
+    open-in-view: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
+        jdbc:
+          time_zone: America/Argentina/Buenos_Aires
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+    encoding: UTF-8
+
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:25}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS:false}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
+
+server:
+  port: ${SERVER_PORT:8443}
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${COOKIE_SECURE:true}
+        same-site: strict
+      timeout: 30m
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8443}
+
+sigai:
+  seguridad:
+    bcrypt-strength: 12
+    intentos-fallidos-max: 5
+    bloqueo-minutos: 15
+    password-reset-token-minutos: 30
+    password-min-length: 8
+  archivos:
+    storage-path: ${STORAGE_PATH:./storage}
+    max-size-documento-mb: 5
+    max-size-foto-mb: 2
+  crypto:
+    aes-key: ${SIGAI_AES_KEY:}
+  email:
+    # Independiente de spring.mail.username (que autentica contra el SMTP):
+    # ese puede quedar vacio en SMTP locales sin auth, pero el remitente
+    # ("From:") siempre tiene que ser una direccion valida.
+    remitente-por-defecto: ${SIGAI_EMAIL_REMITENTE:no-reply@wellspringschool.edu.ar}
+  institucion:
+    nombre: Wellspring School
+    sistema: SIGAI-WS
+  superadmin:
+    limite-recomendado: 3 # politica documental (seccion 5.12.2), no bloqueante
+
+logging:
+  level:
+    ar.edu.wellspring.sigaiws: INFO
+    org.hibernate.SQL: WARN

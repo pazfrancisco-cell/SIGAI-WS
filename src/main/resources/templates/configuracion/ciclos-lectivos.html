@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Ciclos Lectivos')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.configuracion}">Configuracion</span> &gt; <span th:text="#{nav.horarios.ciclosLectivos}">Ciclos Lectivos</span></div>
+        <div class="page-header">
+            <h1 th:text="#{nav.horarios.ciclosLectivos}">Ciclos Lectivos</h1>
+            <div class="page-actions"><a th:href="@{/configuracion/ciclos-lectivos/nuevo}" class="btn btn-primary" th:text="#{ciclos.nuevo}">+ Nuevo Ciclo Lectivo</a></div>
+        </div>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(ciclos)}">
+            <table>
+                <thead><tr><th th:text="#{ciclos.colAnio}">Año</th><th>C1</th><th>C2</th><th th:text="#{common.estado}">Estado</th><th th:text="#{ciclos.colCuatrimestreActivo}">Cuatrimestre activo</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${ciclos}">
+                    <td data-label="Año" th:text="${c.anio}">2026</td>
+                    <td data-label="C1" th:text="${#temporals.format(c.fechaInicioC1,'dd/MM')} + ' - ' + ${#temporals.format(c.fechaFinC1,'dd/MM')}">-</td>
+                    <td data-label="C2" th:text="${#temporals.format(c.fechaInicioC2,'dd/MM')} + ' - ' + ${#temporals.format(c.fechaFinC2,'dd/MM')}">-</td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${c.activo}" th:text="#{estado.activo}">Activo</span>
+                        <span class="chip chip-gris" th:unless="${c.activo}" th:text="${c.estado}">-</span>
+                    </td>
+                    <td data-label="Cuatrimestre" th:text="${c.activo ? 'C' + c.cuatrimestreActivo : '-'}">-</td>
+                    <td data-label="Acciones">
+                        <form th:action="@{/configuracion/ciclos-lectivos/{id}/activar(id=${c.id})}" method="post" style="display:inline" th:unless="${c.activo}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-primary compacto" th:attr="data-confirm=#{ciclos.confirmActivar}" data-confirm="Se archivara el ciclo lectivo activo actual. ¿Confirmar?" th:text="#{ciclos.activar}">Activar</button>
+                        </form>
+                        <span th:if="${c.activo}">
+                            <form th:action="@{/configuracion/ciclos-lectivos/{id}/cuatrimestre/1(id=${c.id})}" method="post" style="display:inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-ghost compacto">C1</button>
+                            </form>
+                            <form th:action="@{/configuracion/ciclos-lectivos/{id}/cuatrimestre/2(id=${c.id})}" method="post" style="display:inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-ghost compacto">C2</button>
+                            </form>
+                            <a th:href="@{/configuracion/ciclos-lectivos/cerrar-cuatrimestre/1}" class="btn btn-secondary compacto" th:unless="${c.cuatrimestre1Cerrado}" th:text="#{ciclos.cerrarC1}">Cerrar C1</a>
+                            <span class="chip chip-gris" th:if="${c.cuatrimestre1Cerrado}" th:text="#{ciclos.c1Cerrado}">C1 cerrado</span>
+                            <a th:href="@{/configuracion/ciclos-lectivos/cerrar-cuatrimestre/2}" class="btn btn-secondary compacto" th:unless="${c.cuatrimestre2Cerrado}" th:text="#{ciclos.cerrarC2}">Cerrar C2</a>
+                            <span class="chip chip-gris" th:if="${c.cuatrimestre2Cerrado}" th:text="#{ciclos.c2Cerrado}">C2 cerrado</span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(ciclos)}">
+            <h3 th:text="#{ciclos.vacio}">No hay ciclos lectivos cargados</h3>
+            <a th:href="@{/configuracion/ciclos-lectivos/nuevo}" class="btn btn-primary" th:text="#{ciclos.crearPrimero}">Crear el primero</a>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

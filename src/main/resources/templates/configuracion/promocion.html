@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Promocion de alumnos')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><a th:href="@{/configuracion}" th:text="#{nav.configuracion}">Configuracion</a> &gt; <span th:text="#{promocion.titulo}">Promocion de alumnos</span></div>
+        <h1 th:text="#{promocion.titulo}">Promocion de alumnos</h1>
+
+        <div class="estado-vacio" th:if="${propuesta.cicloAnterior() == null}">
+            <h3 th:text="#{promocion.sinCicloAnterior}">No hay un ciclo lectivo anterior al activo: no hay alumnos para promover.</h3>
+        </div>
+
+        <th:block th:if="${propuesta.cicloAnterior() != null}">
+            <p class="texto-secundario"
+               th:text="#{promocion.explicacion(${#strings.toString(propuesta.cicloAnterior().anio)}, ${#strings.toString(propuesta.cicloNuevo().anio)})}">
+                Alumnos activos de 2026 que todavia no tienen curso en 2027.</p>
+
+            <div class="estado-vacio" th:if="${propuesta.totalAlumnos() == 0}">
+                <div class="icono">&#9989;</div>
+                <h3 th:text="#{promocion.nadaPendiente}">Todos los alumnos ya tienen curso en el ciclo lectivo activo.</h3>
+            </div>
+
+            <form th:if="${propuesta.totalAlumnos() > 0}" th:action="@{/configuracion/promocion}" method="post"
+                  th:attr="data-confirm=#{promocion.confirmar(${propuesta.totalAlumnos()})}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="card" style="margin-bottom:16px" th:each="g : ${propuesta.grupos()}">
+                    <h3 th:text="${g.curso().nombreCompleto} + ' (' + ${#lists.size(g.filas())} + ')'">1° A</h3>
+                    <div class="tabla-wrapper">
+                        <table>
+                            <thead><tr>
+                                <th th:text="#{promocion.colAlumno}">Alumno</th>
+                                <th th:text="#{promocion.colMotivo}">Observacion</th>
+                                <th th:text="#{promocion.colAccion}">Que hace</th>
+                                <th th:text="#{promocion.colDestino}">Curso en el año nuevo</th>
+                            </tr></thead>
+                            <tbody>
+                            <tr th:each="f : ${g.filas()}" class="fila-promocion">
+                                <td data-label="Alumno">
+                                    <a th:href="@{/alumnos/{id}(id=${f.alumno().id})}" target="_blank" th:text="${f.alumno().nombreCompleto}">Alumno</a>
+                                    <input type="hidden" th:name="|decisiones[${f.indice()}].alumnoId|" th:value="${f.alumno().id}"/>
+                                </td>
+                                <td data-label="Observacion">
+                                    <span th:if="${f.sugerida().name() == 'REPITE'}" class="chip chip-naranja" th:text="${f.motivo()}">motivo</span>
+                                    <span th:unless="${f.sugerida().name() == 'REPITE'}" class="texto-secundario" th:text="${f.motivo()}">motivo</span>
+                                </td>
+                                <td data-label="Que hace">
+                                    <select class="accion-promocion" th:name="|decisiones[${f.indice()}].accion|"
+                                            th:attr="data-destino-pasa=${f.destinoPasaId()},data-destino-repite=${f.destinoRepiteId()}">
+                                        <option value="PASA" th:if="${f.destinoPasaId() != null}" th:selected="${f.sugerida().name() == 'PASA'}" th:text="#{promocion.pasa}">Pasa de año</option>
+                                        <option value="REPITE" th:selected="${f.sugerida().name() == 'REPITE'}" th:text="#{promocion.repite}">Repite</option>
+                                        <option value="EGRESA" th:if="${f.cursoActual().anio == 6}" th:selected="${f.sugerida().name() == 'EGRESA'}" th:text="#{promocion.egresa}">Egresa</option>
+                                    </select>
+                                </td>
+                                <td data-label="Curso en el año nuevo">
+                                    <select class="destino-promocion" th:name="|decisiones[${f.indice()}].cursoDestinoId|"
+                                            th:disabled="${f.sugerida().name() == 'EGRESA'}">
+                                        <option value="" th:text="#{promocion.elegirCurso}">(elegir curso)</option>
+                                        <option th:each="c : ${cursosActivos}" th:value="${c.id}" th:text="${c.nombreCompleto}"
+                                                th:selected="${c.id == f.destinoSugeridoId()}"></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" th:text="#{promocion.aplicar(${propuesta.totalAlumnos()})}">Aplicar promocion</button>
+            </form>
+        </th:block>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

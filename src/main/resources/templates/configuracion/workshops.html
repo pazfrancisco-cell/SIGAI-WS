@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Workshops')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.configuracion}">Configuracion</span> &gt; <span th:text="#{nav.workshops}">Workshops</span></div>
+        <div class="page-header">
+            <h1 th:text="#{nav.workshops}">Workshops</h1>
+            <div class="page-actions"><a th:href="@{/configuracion/workshops/nuevo}" class="btn btn-primary" th:text="#{catalogoWorkshops.nuevo}">+ Nuevo Workshop</a></div>
+        </div>
+        <p class="texto-secundario" th:text="#{catalogoWorkshops.subtitulo}">Catalogo base. La asignacion de alumnos y el cambio obligatorio C1/C2 se incorporan en la Fase 4 del roadmap.</p>
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(workshops)}">
+            <table>
+                <thead><tr><th th:text="#{edfisica.colNombre}">Nombre</th><th th:text="#{alumnos.legajo.colDescripcion}">Descripcion</th><th th:text="#{workshops.banda}">Banda de años</th><th th:text="#{common.estado}">Estado</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="w : ${workshops}">
+                    <td data-label="Nombre" th:text="${w.nombre}">Workshop</td>
+                    <td data-label="Descripcion" th:text="${w.descripcion ?: '-'}">-</td>
+                    <td data-label="Banda" th:text="${w.banda.name() == 'ANIOS_1_A_3'} ? #{workshops.banda.1a3} : #{workshops.banda.4a6}">-</td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${w.activo}" th:text="#{estado.activo}">Activo</span>
+                        <span class="chip chip-rojo" th:unless="${w.activo}" th:text="#{estado.inactivo}">Inactivo</span>
+                    </td>
+                    <td data-label="Acciones"><a th:href="@{/configuracion/workshops/{id}/editar(id=${w.id})}" class="btn btn-icon">&#9998;</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(workshops)}"><h3 th:text="#{catalogoWorkshops.vacio}">No hay workshops cargados</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

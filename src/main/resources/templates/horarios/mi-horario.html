@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Mi Horario')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.horarios.miHorario}">Mi Horario</div>
+        <div class="page-header">
+            <h1 th:text="#{nav.horarios.miHorario}">Mi Horario</h1>
+            <div class="page-actions">
+                <a th:href="@{/horarios/mi-horario/pdf}" target="_blank" class="btn btn-secondary" th:text="#{horarios.exportarPdf}">Exportar PDF</a>
+            </div>
+        </div>
+
+        <div class="tabla-wrapper">
+            <table class="tabla-grilla con-columna-fija horario-semanal">
+                <thead>
+                <tr><th th:text="#{horarios.colPeriodo}">Periodo</th><th th:text="#{horarios.dia.lunes}">Lunes</th><th th:text="#{horarios.dia.martes}">Martes</th><th th:text="#{horarios.dia.miercoles}">Miercoles</th><th th:text="#{horarios.dia.jueves}">Jueves</th><th th:text="#{horarios.dia.viernes}">Viernes</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="periodo : ${periodos}">
+                    <td data-label="Periodo">
+                        <b th:text="${periodo.nombre}">Periodo 1</b><br/>
+                        <span class="texto-secundario" th:text="${#temporals.format(periodo.horaInicio,'HH:mm')} + ' - ' + ${#temporals.format(periodo.horaFin,'HH:mm')}"></span>
+                    </td>
+                    <td data-label="Dia" th:each="dia : ${#numbers.sequence(1,5)}"
+                        th:with="slot=${slotsPorClave.get(dia + '-' + periodo.orden)},wslot=${workshopSlotsPorClave.get(dia + '-' + periodo.orden)}">
+                        <div th:if="${slot != null}">
+                            <span class="chip chip-verde" th:text="${slot.materia != null ? slot.materia.nombre : '-'}"></span><br/>
+                            <span class="texto-secundario" th:text="${slot.cursoDivision.nombreCompleto}"></span>
+                            <a th:href="@{/asistencia/docente(horarioSlotId=${slot.id})}" class="btn btn-ghost compacto" style="margin-top:4px" th:text="#{dashboard.docente.tomarAsistencia}">Tomar asistencia</a>
+                        </div>
+                        <div th:if="${wslot != null}">
+                            <span class="chip chip-verde" th:text="${wslot.workshop.nombre}"></span><br/>
+                            <span class="texto-secundario" th:if="${wslot.aula != null}" th:text="${wslot.aula.nombre}"></span>
+                            <a th:href="@{/workshops/asistencia}" class="btn btn-ghost compacto" style="margin-top:4px" th:text="#{dashboard.docente.tomarAsistencia}">Tomar asistencia</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

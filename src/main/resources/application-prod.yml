@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    show-sql: false
+  thymeleaf:
+    cache: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true # HTTPS obligatorio en produccion (seccion 3.4 del documento)
+
+logging:
+  level:
+    ar.edu.wellspring.sigaiws: INFO
+    root: WARN

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Plantillas de Email')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.configuracion}">Configuracion</span> &gt; <span th:text="#{nav.plantillasEmail}">Plantillas de Email</span></div>
+        <h1 th:text="#{nav.plantillasEmail}">Plantillas de Email</h1>
+        <p class="texto-secundario" th:text="#{plantillasEmail.subtitulo}">Edita el texto de los emails automaticos del sistema. Usa variables entre llaves (ej. {nombre}) donde corresponda; se reemplazan al momento de enviar.</p>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(plantillas)}">
+            <table>
+                <thead><tr><th th:text="#{alumnos.legajo.colDescripcion}">Descripcion</th><th th:text="#{plantillasEmail.colAsunto}">Asunto</th><th th:text="#{common.estado}">Estado</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${plantillas}">
+                    <td data-label="Descripcion" th:text="${p.descripcion}">-</td>
+                    <td data-label="Asunto" th:text="${p.asunto}">-</td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${p.habilitada}" th:text="#{plantillasEmail.habilitada}">Habilitada</span>
+                        <span class="chip chip-rojo" th:unless="${p.habilitada}" th:text="#{plantillasEmail.deshabilitada}">Deshabilitada</span>
+                    </td>
+                    <td data-label="Acciones"><a th:href="@{/configuracion/plantillas-email/{id}/editar(id=${p.id})}" class="btn btn-icon">&#9998;</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(plantillas)}"><h3 th:text="#{plantillasEmail.vacio}">No hay plantillas cargadas</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

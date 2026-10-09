@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    show-sql: true
+  thymeleaf:
+    cache: false
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false # permite HTTP en localhost durante desarrollo
+
+logging:
+  level:
+    ar.edu.wellspring.sigaiws: DEBUG

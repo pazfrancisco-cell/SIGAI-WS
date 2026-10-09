@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Horario del Workshop')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><a th:href="@{/workshops}" th:text="#{nav.workshops}">Workshops</a> &gt; <span th:text="#{workshops.horario.breadcrumb}">Horario</span></div>
+        <h1 th:text="${workshop.nombre}">Workshop</h1>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(slots)}">
+            <table>
+                <thead><tr><th th:text="#{horarios.colDia}">Dia</th><th th:text="#{horarios.colPeriodo}">Periodo</th><th th:text="#{dashboard.docente.colAula}">Aula</th></tr></thead>
+                <tbody>
+                <tr th:each="s : ${slots}" th:with="dias=#{horarios.dia.lunes} + ',' + #{horarios.dia.martes} + ',' + #{horarios.dia.miercoles} + ',' + #{horarios.dia.jueves} + ',' + #{horarios.dia.viernes}">
+                    <td data-label="Dia" th:text="${#strings.arraySplit(dias, ',')[s.diaSemana - 1]}">Dia</td>
+                    <td data-label="Periodo" th:text="${s.periodoOrden}">1</td>
+                    <td data-label="Aula" th:text="${s.aula != null ? s.aula.nombre : '-'}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(slots)}"><h3 th:text="#{workshops.horario.vacio}">Este workshop todavia no tiene bloques de horario asignados</h3></div>
+
+        <div class="card" style="margin-top:20px">
+            <h3 th:text="#{workshops.horario.agregarBloque}">Agregar bloque semanal</h3>
+            <form th:action="@{/workshops/{id}/horario(id=${workshop.id})}" method="post" class="form-row" style="align-items:flex-end">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group">
+                    <label th:text="#{horarios.colDia}">Dia</label>
+                    <select name="diaSemana">
+                        <option value="1" th:text="#{horarios.dia.lunes}">Lunes</option>
+                        <option value="2" th:text="#{horarios.dia.martes}">Martes</option>
+                        <option value="3" th:text="#{horarios.dia.miercoles}">Miercoles</option>
+                        <option value="4" th:text="#{horarios.dia.jueves}">Jueves</option>
+                        <option value="5" th:text="#{horarios.dia.viernes}">Viernes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label th:text="#{horarios.colPeriodo}">Periodo</label>
+                    <select name="periodoOrden">
+                        <option th:each="p : ${periodos}" th:value="${p.orden}" th:text="${p.nombre}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label th:text="#{dashboard.docente.colAula}">Aula</label>
+                    <select name="aulaId">
+                        <option value="" th:text="#{horarios.sinAsignar}">— Sin asignar —</option>
+                        <option th:each="a : ${aulas}" th:value="${a.id}" th:text="${a.nombre}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary compacto" th:text="#{accion.guardar}">Guardar</button>
+            </form>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

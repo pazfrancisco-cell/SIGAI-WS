@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head th:replace="~{fragments/head :: head(titulo='Mensajes')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb" th:text="#{nav.mensajes}">Mensajes</div>
+        <div class="page-header">
+            <h1 th:text="#{nav.mensajes}">Mensajes</h1>
+            <div class="page-actions" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <a th:href="@{/mensajes/comunicado}" class="btn btn-secondary" th:text="#{comunicados.institucionales}">Comunicados Institucionales</a>
+            </div>
+        </div>
+
+        <div class="mensajeria" th:classappend="${conversacionId != null} ? 'con-conversacion'">
+            <div class="card mensajeria-lista">
+                <h3 th:text="#{mensajes.nuevaConversacion}">Nueva conversacion</h3>
+                <form th:action="@{/mensajes/nueva}" method="post" style="display:flex;gap:6px;margin-bottom:12px">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <select name="destinatarioId" style="flex:1;min-width:0">
+                        <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nombreCompleto}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-primary compacto" th:text="#{mensajes.iniciar}">Iniciar</button>
+                </form>
+
+                <details sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')" style="margin-bottom:16px">
+                    <summary style="cursor:pointer;font-weight:600" th:text="#{mensajes.nuevoGrupo}">+ Nuevo grupo</summary>
+                    <form th:action="@{/mensajes/grupos}" method="post" style="margin-top:8px">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="form-group">
+                            <label th:text="#{mensajes.nombreGrupo}">Nombre del grupo</label>
+                            <input type="text" name="nombre" maxlength="120" required th:placeholder="#{mensajes.nombreGrupoPlaceholder}"/>
+                        </div>
+                        <label th:text="#{mensajes.integrantes}">Integrantes</label>
+                        <div class="lista-checks-usuarios">
+                            <label th:each="u : ${usuarios}" class="checkbox-row" style="font-weight:400;margin:0">
+                                <input type="checkbox" name="participanteIds" th:value="${u.id}"/>
+                                <span th:text="${u.nombreCompleto}">Usuario</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary compacto" style="margin-top:8px" th:text="#{mensajes.crearGrupo}">Crear grupo</button>
+                    </form>
+                </details>
+
+                <h3 th:text="#{mensajes.conversaciones}">Conversaciones</h3>
+                <div th:each="c : ${conversaciones}" class="item-conversacion">
+                    <a th:href="@{/mensajes/{id}(id=${c.conversacionId()})}" th:style="${c.noLeido()} ? 'font-weight:700' : ''">
+                        <span th:if="${c.grupal()}" th:title="#{mensajes.grupo}">&#128101;</span>
+                        <span th:text="${c.titulo()} ?: #{mensajes.usuarioFallback}">Usuario</span>
+                    </a>
+                    <span class="badge-alertas" th:if="${c.noLeido()}" style="position:static;display:inline-flex;margin-left:6px">•</span>
+                    <div class="texto-secundario ultimo-mensaje" th:text="${c.ultimoMensaje()}"></div>
+                </div>
+                <p class="texto-secundario" th:if="${#lists.isEmpty(conversaciones)}" th:text="#{mensajes.sinConversaciones}">Sin conversaciones todavia.</p>
+            </div>
+
+            <div class="card mensajeria-chat" th:if="${conversacionId != null}">
+                <a th:href="@{/mensajes}" class="volver-conversaciones" th:text="#{mensajes.volver}">&larr; Conversaciones</a>
+                <div class="page-header" style="margin-bottom:8px">
+                    <h3 style="margin:0">
+                        <span th:if="${conversacion.grupal}">&#128101;</span>
+                        <span th:text="${tituloConversacion} ?: #{mensajes.conversacion}">Conversacion</span>
+                    </h3>
+                    <form th:if="${conversacion.grupal}" th:action="@{/mensajes/{id}/participantes/{u}/quitar(id=${conversacionId},u=${usuarioActualId})}" method="post"
+                          th:attr="data-confirm=#{mensajes.confirmSalir}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-ghost compacto" th:text="#{mensajes.salirGrupo}">Salir del grupo</button>
+                    </form>
+                </div>
+
+                <div th:if="${conversacion.grupal}" style="margin-bottom:12px">
+                    <span class="texto-secundario" th:text="#{mensajes.integrantes} + ' (' + ${#lists.size(participantes)} + '):'">Integrantes:</span>
+                    <span th:each="p : ${participantes}" class="chip chip-gris" style="margin:2px 4px 2px 0;display:inline-flex;align-items:center;gap:4px">
+                        <span th:text="${p.nombreCompleto}">Nombre</span>
+                        <form th:if="${esCreador and p.id != usuarioActualId}" style="display:inline"
+                              th:action="@{/mensajes/{id}/participantes/{u}/quitar(id=${conversacionId},u=${p.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="link" th:title="#{mensajes.quitarIntegrante}" style="padding:0 2px">&times;</button>
+                        </form>
+                    </span>
+                    <details th:if="${esCreador and not #lists.isEmpty(usuariosParaAgregar)}" style="margin-top:8px">
+                        <summary style="cursor:pointer" th:text="#{mensajes.agregarIntegrantes}">+ Agregar integrantes</summary>
+                        <form th:action="@{/mensajes/{id}/participantes(id=${conversacionId})}" method="post" style="margin-top:6px">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="lista-checks-usuarios">
+                                <label th:each="u : ${usuariosParaAgregar}" class="checkbox-row" style="font-weight:400;margin:0">
+                                    <input type="checkbox" name="usuarioIds" th:value="${u.id}"/>
+                                    <span th:text="${u.nombreCompleto}">Usuario</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-secondary compacto" style="margin-top:6px" th:text="#{mensajes.agregar}">Agregar</button>
+                        </form>
+                    </details>
+                </div>
+
+                <div class="mensajes-hilo" id="mensajes-hilo">
+                    <div th:each="m : ${mensajes}" class="burbuja" th:classappend="${m.remitente.id == usuarioActualId} ? 'propia'">
+                        <div class="texto-secundario" th:text="${m.remitente.nombreCompleto} + ' - ' + ${#temporals.format(m.enviadoEn,'dd/MM HH:mm')}"></div>
+                        <div class="contenido" th:unless="${#strings.isEmpty(m.contenido)}" th:text="${m.contenido}">-</div>
+                        <div th:if="${m.adjuntoPath != null}" style="margin-top:4px">
+                            <a th:href="'/archivos?' + ${@firmaArchivoService.queryFirmado(m.adjuntoPath)}" target="_blank" rel="noopener">
+                                &#128206; <span th:text="${m.adjuntoNombre} ?: #{mensajes.adjunto}">archivo</span>
+                            </a>
+                        </div>
+                        <th:block th:if="${m.remitente.id == usuarioActualId}" th:with="vistoPor=${vistos.get(m.id)} ?: 0">
+                            <div class="texto-secundario" style="font-size:11px" th:unless="${conversacion.grupal}"
+                                 th:text="${vistoPor > 0} ? #{mensajes.visto} : #{mensajes.enviado}"></div>
+                            <div class="texto-secundario" style="font-size:11px" th:if="${conversacion.grupal}"
+                                 th:text="#{mensajes.vistoPor(${vistoPor}, ${otrosParticipantes})}"></div>
+                        </th:block>
+                    </div>
+                    <p class="texto-secundario" th:if="${#lists.isEmpty(mensajes)}" th:text="#{mensajes.sinMensajes}">Todavia no hay mensajes.</p>
+                </div>
+                <form th:action="@{/mensajes/{id}/enviar(id=${conversacionId})}" method="post" enctype="multipart/form-data"
+                      class="form-enviar-mensaje">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="text" name="contenido" th:placeholder="#{mensajes.escribirPlaceholder}" placeholder="Escribi un mensaje..." maxlength="2000"/>
+                    <input type="file" name="adjunto" th:title="#{mensajes.adjuntarArchivo}"
+                           accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"/>
+                    <button type="submit" class="btn btn-primary compacto" th:text="#{mensajes.enviarBtn}">Enviar</button>
+                </form>
+                <p class="texto-secundario" style="font-size:12px;margin-top:4px" th:text="#{mensajes.adjuntoHint}">Adjuntos: PDF, imagenes, Word, Excel, PowerPoint o TXT, hasta 10 MB.</p>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

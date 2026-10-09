@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Panel')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.dashboard}">Panel</div>
+        <h1 th:text="#{dashboard.preceptor.h1}">Panel del Preceptor</h1>
+
+        <div class="card">
+            <h3 th:text="#{dashboard.preceptor.accesoRapido}">Acceso rapido</h3>
+            <a th:href="@{/asistencia/preceptor}" class="btn btn-primary" th:text="#{dashboard.preceptor.tomarAsistencia}">Tomar Asistencia</a>
+            <a th:href="@{/disciplina/nueva}" class="btn btn-secondary" th:text="#{nav.disciplina.registrar}">Registrar Observacion</a>
+        </div>
+
+        <div class="stat-grid" style="margin-top:16px">
+            <div class="card">
+                <h3 th:text="#{dashboard.disciplinaSemanal.titulo}">Disciplina de la Semana</h3>
+                <p class="texto-secundario" th:text="#{dashboard.disciplinaSemanal.desc}">Observaciones registradas en los ultimos 7 dias</p>
+                <p class="valor" th:text="${metricasDisciplinarias.total()}">0</p>
+                <div th:if="${not #maps.isEmpty(metricasDisciplinarias.porCategoria())}" style="margin-top:8px">
+                    <div th:each="entrada : ${metricasDisciplinarias.porCategoria()}" class="texto-secundario">
+                        <span th:text="${entrada.key} + ': ' + ${entrada.value}">Categoria: 0</span>
+                    </div>
+                </div>
+                <p th:if="${metricasDisciplinarias.total() == 0}" class="texto-secundario" th:text="#{dashboard.disciplinaSemanal.sinDatos}">Sin observaciones esta semana</p>
+            </div>
+            <div class="card">
+                <h3 th:text="#{dashboard.proximosUmbral.titulo}">Alumnos proximos a Condicion Libre</h3>
+                <p class="texto-secundario" th:text="#{dashboard.proximosUmbral.desc}">Entre 17 y 20 faltas acumuladas en el ciclo activo</p>
+                <div th:if="${alumnosProximosAlUmbral != null and not #lists.isEmpty(alumnosProximosAlUmbral)}" class="lista-items">
+                    <a th:each="a : ${alumnosProximosAlUmbral}" th:href="@{/alumnos/{id}(id=${a.id})}" class="item-lista">
+                        <span th:text="${a.nombreCompleto}">Alumno</span>
+                    </a>
+                </div>
+                <p th:if="${alumnosProximosAlUmbral == null or #lists.isEmpty(alumnosProximosAlUmbral)}" class="texto-secundario" th:text="#{dashboard.proximosUmbral.sinDatos}">Ningun alumno en este rango por ahora</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <div class="page-header">
+                <h3><span th:text="#{dashboard.preceptor.alertasActivas}">Alertas activas</span> (<span th:text="${totalAlertasActivas}">0</span>)</h3>
+                <div class="page-actions" th:if="${totalAlertasActivas > 0}">
+                    <a th:href="@{/alertas}" class="btn btn-secondary compacto" th:text="#{dashboard.preceptor.verTodasAlertas}">Ver todas</a>
+                </div>
+            </div>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(alertasActivas)}">
+                <table>
+                    <thead><tr><th th:text="#{dashboard.preceptor.colPrioridad}">Prioridad</th><th th:text="#{dashboard.preceptor.colTipo}">Tipo</th><th th:text="#{dashboard.preceptor.colAlumno}">Alumno</th></tr></thead>
+                    <tbody>
+                    <tr th:each="a : ${alertasActivas}">
+                        <td data-label="Prioridad" th:text="${a.prioridad}">-</td>
+                        <td data-label="Tipo" th:text="${a.tipo}">-</td>
+                        <td data-label="Alumno">
+                            <a th:if="${a.alumno != null}" th:href="@{/alumnos/{id}(id=${a.alumno.id})}" th:text="${a.alumno.nombreCompleto}">-</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p th:if="${#lists.isEmpty(alertasActivas)}" class="texto-secundario" th:text="#{dashboard.preceptor.sinAlertas}">No hay alertas activas.</p>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

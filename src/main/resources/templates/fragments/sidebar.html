@@ -1,0 +1,111 @@
+<nav xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
+     th:fragment="sidebar" class="sidebar">
+
+    <a th:href="@{/}">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21H15v-7H9v7H3z"/></svg></span> <span th:text="#{nav.dashboard}">Panel</span>
+    </a>
+    <a th:href="@{/calendario}">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.6" y="4.6" width="16.8" height="16" rx="2"/><path d="M3.6 9.4h16.8"/><path d="M8 3v3"/><path d="M16 3v3"/></svg></span> <span th:text="#{nav.calendario}">Calendario Academico</span>
+    </a>
+
+    <div class="sidebar-seccion" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')" th:text="#{nav.seccion.alumnos}">Alumnos y Seguimiento</div>
+    <a th:href="@{/alumnos}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="7.5" r="3.8"/><path d="M3.5 20.5v-1.2A4.8 4.8 0 0 1 8.3 14.5h3.4a4.8 4.8 0 0 1 4.8 4.8v1.2"/><path d="M17.5 8.2a3 3 0 0 1 0 5.6"/></svg></span> <span th:text="#{nav.alumnos}">Alumnos</span>
+    </a>
+    <details class="sidebar-grupo" open sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+        <summary><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5H6.6A1.6 1.6 0 0 0 5 6.1V20a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 20V6.1a1.6 1.6 0 0 0-1.6-1.6H15"/><rect x="9" y="2.6" width="6" height="3.8" rx="1"/><path d="M8.6 13.6 11 16l4.4-4.8"/></svg></span> <span th:text="#{nav.asistencia}">Asistencia</span> <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <a th:href="@{/asistencia/preceptor}" th:text="#{nav.asistencia.registro}">Registro de Asistencia</a>
+        <a th:href="@{/asistencia/resumen}" th:text="#{nav.asistencia.resumenCurso}">Resumen por Curso</a>
+    </details>
+    <a th:href="@{/asistencia/docente}" sec:authorize="hasRole('DOCENTE') and principal.tieneAsignacionMateria and not principal.usuario.esDocenteEducacionFisica">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5H6.6A1.6 1.6 0 0 0 5 6.1V20a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 20V6.1a1.6 1.6 0 0 0-1.6-1.6H15"/><rect x="9" y="2.6" width="6" height="3.8" rx="1"/><path d="M8.6 13.6 11 16l4.4-4.8"/></svg></span> <span th:text="#{nav.asistencia.misClases}">Asistencia (Mis clases)</span>
+    </a>
+    <a th:href="@{/calificaciones/cargar}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO') or (hasRole('DOCENTE') and principal.tieneAsignacionMateria)">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span> <span th:text="#{nav.calificaciones}">Calificaciones</span>
+    </a>
+    <a th:href="@{/mesas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO') or (hasRole('DOCENTE') and principal.tieneAsignacionMateria)">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.6" y="3.6" width="14.8" height="17" rx="2"/><path d="M8.4 8.4h7.2"/><path d="M8.4 12.2h7.2"/><path d="M8.4 16h4"/></svg></span> <span th:text="#{nav.mesas}">Mesas de examen</span>
+    </a>
+    <a th:href="@{/workshops/asistencia}" sec:authorize="hasRole('DOCENTE') and principal.usuario.esDocenteWorkshop">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5H6.6A1.6 1.6 0 0 0 5 6.1V20a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 20V6.1a1.6 1.6 0 0 0-1.6-1.6H15"/><rect x="9" y="2.6" width="6" height="3.8" rx="1"/><path d="M8.6 13.6 11 16l4.4-4.8"/></svg></span> <span th:text="#{nav.workshops.asistencia}">Asistencia (Mi Workshop)</span>
+    </a>
+    <a th:href="@{/workshops/calificaciones}" sec:authorize="hasRole('DOCENTE') and principal.usuario.esDocenteWorkshop">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span> <span th:text="#{nav.workshops.calificaciones}">Calificaciones (Mi Workshop)</span>
+    </a>
+    <a th:href="@{/educacion-fisica/asistencia}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO') or (hasRole('DOCENTE') and principal.usuario.esDocenteEducacionFisica)">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5H6.6A1.6 1.6 0 0 0 5 6.1V20a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 20V6.1a1.6 1.6 0 0 0-1.6-1.6H15"/><rect x="9" y="2.6" width="6" height="3.8" rx="1"/><path d="M8.6 13.6 11 16l4.4-4.8"/></svg></span> <span th:text="#{nav.edfisica.asistencia}">Asistencia (Educacion Fisica)</span>
+    </a>
+    <a th:href="@{/educacion-fisica/grupos}" sec:authorize="hasRole('DOCENTE') and principal.usuario.esDocenteEducacionFisica">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.5" r="3.4"/><path d="M3.5 20v-1.1A4.3 4.3 0 0 1 7.8 14.6h2.4a4.3 4.3 0 0 1 4.3 4.3V20"/><path d="M16.5 8.6a2.7 2.7 0 0 1 0 5"/><path d="M19.8 20v-1a3.8 3.8 0 0 0-2.5-3.6"/></svg></span> <span th:text="#{nav.edfisica.misGrupos}">Mis Grupos (Educacion Fisica)</span>
+    </a>
+    <a th:href="@{/educacion-fisica/pruebas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO') or (hasRole('DOCENTE') and principal.usuario.esDocenteEducacionFisica)">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span> <span th:text="#{nav.materias.pruebasFisicas}">Pruebas Fisicas</span>
+    </a>
+    <a th:href="@{/calificaciones/solicitudes}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4.2L20.2 8 16 3.8 4 15.8z"/></svg></span> <span th:text="#{nav.calificaciones.solicitudes}">Solicitudes de Correccion</span>
+    </a>
+    <details class="sidebar-grupo" open sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')">
+        <summary><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.4 2.6 20.6h18.8z"/><path d="M12 10v4.4"/><path d="M12 17.6v.2"/></svg></span> <span th:text="#{nav.disciplina}">Disciplina</span> <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <a th:href="@{/disciplina/nueva}" th:text="#{nav.disciplina.registrar}">Registrar Observacion</a>
+        <a th:href="@{/disciplina/resumen}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')" th:text="#{nav.disciplina.resumenCurso}">Resumen por Curso</a>
+        <a th:href="@{/disciplina/actas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.disciplina.actas}">Actas</a>
+    </details>
+
+    <div class="sidebar-seccion" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR','DOCENTE')" th:text="#{nav.seccion.horariosMaterias}">Horarios y Materias</div>
+    <details class="sidebar-grupo" open sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+        <summary><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.6" y="5.6" width="16.8" height="15" rx="2"/><path d="M3.6 10.2h16.8"/><path d="M8.4 3.4v4"/><path d="M15.6 3.4v4"/></svg></span> <span th:text="#{nav.horarios}">Horarios</span> <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <a th:href="@{/horarios}" th:text="#{nav.horarios.grilla}">Grilla de Horarios</a>
+        <a th:href="@{/horarios/asignaciones}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{horarios.asignacionDocente}">Asignacion Docente</a>
+        <a th:href="@{/configuracion/ciclos-lectivos}" sec:authorize="hasRole('SUPERADMIN')" th:text="#{nav.horarios.ciclosLectivos}">Ciclos Lectivos</a>
+        <a th:href="@{/configuracion/promocion}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO')" th:text="#{nav.horarios.promocion}">Promocion de alumnos</a>
+        <a th:href="@{/configuracion/periodos-horarios}" sec:authorize="hasRole('SUPERADMIN')" th:text="#{nav.horarios.estructuraDia}">Estructura del Dia</a>
+    </details>
+    <a th:href="@{/horarios/mi-horario}" sec:authorize="hasRole('DOCENTE')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.6" y="5.6" width="16.8" height="15" rx="2"/><path d="M3.6 10.2h16.8"/><path d="M8.4 3.4v4"/><path d="M15.6 3.4v4"/></svg></span> <span th:text="#{nav.horarios.miHorario}">Mi Horario</span>
+    </a>
+    <details class="sidebar-grupo" open sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+        <summary><span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span> <span th:text="#{nav.materias.grupo}">Materias y workshops</span> <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <a th:href="@{/configuracion/cursos}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.materias.cursos}">Cursos y Divisiones</a>
+        <a th:href="@{/configuracion/materias}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.materias.materias}">Materias</a>
+        <a th:href="@{/workshops}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.workshops}">Workshops</a>
+        <a th:href="@{/educacion-fisica/grupos}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.materias.edfisicaGrupos}">Educacion Fisica - Grupos</a>
+        <a th:href="@{/educacion-fisica/catalogo-pruebas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.materias.catalogoPruebas}">Catalogo de Pruebas Fisicas</a>
+    </details>
+    <a th:href="@{/configuracion/aulas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','DOCENTE')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 20.6V6.6L12 3.4l7.6 3.2v14"/><path d="M9.4 20.6v-5.2h5.2v5.2"/></svg></span> <span th:text="#{nav.aulas}">Aulas</span>
+    </a>
+
+    <div class="sidebar-seccion" th:text="#{nav.seccion.comunicacion}">Comunicacion</div>
+    <a th:href="@{/mensajes}">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.4h16v11.2H9.6L4 20.6z"/></svg></span> <span th:text="#{nav.mensajes}">Mensajes</span>
+    </a>
+    <a th:href="@{/alertas}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO','PRECEPTOR')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5a6 6 0 1 1 12 0V14l1.8 3H4.2L6 14z"/><path d="M10 20.2a2.2 2.2 0 0 0 4 0"/></svg></span> <span th:text="#{nav.alertas}">Alertas</span>
+    </a>
+    <a th:href="@{/portal-padres}" sec:authorize="hasRole('PADRE_TUTOR')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.6" r="3.4"/><circle cx="16.6" cy="9.6" r="2.6"/><path d="M3 20.4v-1.2a4.4 4.4 0 0 1 4.4-4.4h3.2a4.4 4.4 0 0 1 4.4 4.4v1.2"/></svg></span> <span th:text="#{nav.misHijos}">Mis Hijos</span>
+    </a>
+
+    <div class="sidebar-seccion" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{nav.seccion.reportesConfig}">Reportes y Configuracion</div>
+    <a th:href="@{/configuracion}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.4h5"/><path d="M13 7.4h7"/><path d="M4 16.6h7"/><path d="M15 16.6h5"/><circle cx="11" cy="7.4" r="2.2"/><circle cx="13" cy="16.6" r="2.2"/></svg></span> <span th:text="#{nav.configuracion}">Configuracion</span>
+    </a>
+    <a th:href="@{/reportes}" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20.4h16.4"/><path d="M6.6 20.4V11"/><path d="M12 20.4V4.4"/><path d="M17.4 20.4v-6.6"/></svg></span> <span th:text="#{nav.reportes}">Reportes</span>
+    </a>
+    <a th:href="@{/configuracion/parametros-academicos}" sec:authorize="hasRole('SUPERADMIN')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.4h5"/><path d="M13 7.4h7"/><path d="M4 16.6h7"/><path d="M15 16.6h5"/><circle cx="11" cy="7.4" r="2.2"/><circle cx="13" cy="16.6" r="2.2"/></svg></span> <span th:text="#{nav.parametrosAcademicos}">Reglas del año escolar</span>
+    </a>
+    <a th:href="@{/configuracion/plantillas-email}" sec:authorize="hasRole('SUPERADMIN')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.4h5"/><path d="M13 7.4h7"/><path d="M4 16.6h7"/><path d="M15 16.6h5"/><circle cx="11" cy="7.4" r="2.2"/><circle cx="13" cy="16.6" r="2.2"/></svg></span> <span th:text="#{nav.plantillasEmail}">Plantillas de Email</span>
+    </a>
+
+    <div class="sidebar-seccion" sec:authorize="hasRole('SUPERADMIN')" th:text="#{nav.seccion.administracion}">Administracion</div>
+    <a th:href="@{/usuarios}" sec:authorize="hasRole('SUPERADMIN')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.2" cy="12" r="3.6"/><path d="M11.8 12H21"/><path d="M17.4 12v3.2"/><path d="M20.2 12v2.2"/></svg></span> <span th:text="#{nav.usuarios}">Usuarios</span>
+    </a>
+    <a th:href="@{/auditoria}" sec:authorize="hasRole('SUPERADMIN')">
+        <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.6 20.6"/></svg></span> <span th:text="#{nav.auditoria}">Auditoria</span>
+    </a>
+</nav>

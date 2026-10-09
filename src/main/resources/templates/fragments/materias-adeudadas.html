@@ -1,0 +1,35 @@
+<!-- Materias adeudadas de un alumno con el resultado de cada mesa (legajo y portal de padres). -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="tabla(adeudadas)">
+    <p class="texto-secundario" th:if="${#lists.isEmpty(adeudadas)}" th:text="#{mesas.sinAdeudadas}">No debe materias.</p>
+    <div class="tabla-wrapper" th:unless="${#lists.isEmpty(adeudadas)}">
+        <table>
+            <thead><tr>
+                <th th:text="#{mesas.colMateria}">Materia adeudada</th>
+                <th th:text="#{mesas.colPromedio}">Promedio anual</th>
+                <th th:text="#{mesas.colMesas}">Mesas rendidas</th>
+                <th th:text="#{common.estado}">Estado</th>
+            </tr></thead>
+            <tbody>
+            <tr th:each="a : ${adeudadas}">
+                <td data-label="Materia" th:text="${a.descripcion}">Matematica (2°, 2026)</td>
+                <td data-label="Promedio" th:text="${a.promedioAnual}">5.5</td>
+                <td data-label="Mesas">
+                    <span th:if="${#lists.isEmpty(a.notasMesa)}">-</span>
+                    <div th:each="n : ${a.notasMesa}">
+                        <span th:text="#{'mesas.turno.' + ${n.turno}} + ' ' + ${n.anio} + ': '">Diciembre 2026:</span>
+                        <strong th:if="${n.ausente}" th:text="#{mesas.colAusente}">Ausente</strong>
+                        <strong th:unless="${n.ausente}" th:text="${n.nota}">5</strong>
+                    </div>
+                </td>
+                <td data-label="Estado">
+                    <span class="chip chip-verde" th:if="${a.estado.name() == 'APROBADA'}"
+                          th:with="turnoTexto=#{'mesas.turno.' + ${a.turnoAprobacion}}"
+                          th:text="#{mesas.estado.aprobadaCon(${a.notaAprobacion}, ${turnoTexto})}">Aprobada</span>
+                    <span class="chip chip-naranja" th:if="${a.estado.name() == 'PENDIENTE'}" th:text="#{mesas.estado.pendiente}">Adeudada</span>
+                    <span class="chip chip-gris" th:if="${a.estado.name() == 'RECURSADA'}" th:text="#{mesas.estado.recursada}">Recursa el año</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

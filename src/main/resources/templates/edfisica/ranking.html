@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Ranking de Prueba Fisica')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/educacion-fisica/pruebas}" th:text="#{nav.materias.pruebasFisicas}">Pruebas Fisicas</a> &gt; <span th:text="#{edfisica.ranking}">Ranking</span></div>
+        <h1 th:text="${prueba.definicion.nombre}">-</h1>
+        <p class="texto-secundario" th:text="#{edfisica.fechaLabel} + ' ' + ${#temporals.format(prueba.fecha,'dd/MM/yyyy')} + ' ' + #{edfisica.grupoLabel} + ' ' + ${prueba.grupo.nombre}">-</p>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{edfisica.mejoresPuntuaciones}">Mejores puntuaciones</span>
+                    <span class="icono-badge icono-badge-verde">&#127942;</span>
+                </div>
+                <div th:if="${not #lists.isEmpty(resumen.mejores())}" style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+                    <div th:each="fila : ${resumen.mejores()}" style="display:flex;justify-content:space-between;gap:8px">
+                        <span><strong th:text="${fila.posicion} + '°'">1°</strong> <span th:text="${fila.alumno.nombreCompleto}">Alumno</span></span>
+                        <span class="valor-numerico" th:text="${fila.valor} + ' ' + ${prueba.definicion.unidad}">-</span>
+                    </div>
+                </div>
+                <p class="texto-secundario" th:if="${#lists.isEmpty(resumen.mejores())}" th:text="#{edfisica.vacioRanking}">Sin resultados cargados para esta prueba</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="label" th:text="#{edfisica.completitud}">Alumnos que completaron la prueba</span>
+                    <span class="icono-badge icono-badge-azul">&#9989;</span>
+                </div>
+                <p class="valor" th:text="${resumen.porcentajeCompletitud()} + '%'">0%</p>
+                <div class="delta" th:text="${resumen.completados()} + ' / ' + ${resumen.totalEsperado()}">0 / 0</div>
+            </div>
+        </div>
+
+        <div class="tabla-wrapper">
+            <table class="tabla-ranking">
+                <thead><tr><th>#</th><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{edfisica.colResultado}">Resultado</th><th th:text="#{edfisica.colProgreso}">Progreso vs. prueba anterior</th></tr></thead>
+                <tbody>
+                <tr th:each="fila : ${ranking}">
+                    <td data-label="#" th:text="${fila.posicion}">1</td>
+                    <td data-label="Alumno" th:text="${fila.alumno.nombreCompleto}">-</td>
+                    <td data-label="Resultado" class="valor-numerico" th:text="${fila.valor}">-</td>
+                    <td data-label="Progreso">
+                        <span class="chip chip-verde" th:if="${#strings.startsWith(fila.progreso,'Mejoro')}" th:text="${fila.progreso}">-</span>
+                        <span class="chip chip-rojo" th:if="${#strings.startsWith(fila.progreso,'Empeoro')}" th:text="${fila.progreso}">-</span>
+                        <span class="chip chip-gris" th:if="${fila.progreso == 'Sin cambios' or fila.progreso == 'Primera vez'}" th:text="${fila.progreso}">-</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(ranking)}">
+            <h3 th:text="#{edfisica.vacioRanking}">Sin resultados cargados para esta prueba</h3>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

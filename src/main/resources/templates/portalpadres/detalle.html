@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Detalle del Alumno')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/portal-padres}" th:text="#{portalpadres.titulo}">Portal de Padres</a> &gt; <span th:text="${alumno.nombreCompleto}"></span></div>
+        <h1 th:text="${alumno.nombreCompleto}">-</h1>
+
+        <div class="card" th:if="${cicloActual}">
+            <h3 th:text="#{nav.asistencia}">Asistencia</h3>
+            <div class="form-row">
+                <div><label th:text="#{alumnos.legajo.inasistenciasAcumuladas}">Inasistencias acumuladas</label><div class="valor-numerico" th:text="${cicloActual.inasistenciasAcumuladas}">0</div></div>
+                <div><label th:text="#{common.estado}">Estado</label>
+                    <span class="chip chip-naranja" th:if="${cicloActual.condicionLibre}" th:text="#{common.condicionLibre}">Condicion Libre</span>
+                    <span class="chip chip-verde" th:unless="${cicloActual.condicionLibre}" th:text="#{alumnos.legajo.regular}">Regular</span>
+                </div>
+                <div><label th:text="#{workshops.colCurso}">Curso</label><div th:text="${cicloActual.cursoDivision.nombreCompleto}">-</div></div>
+            </div>
+        </div>
+
+        <!-- Calificaciones: materia por materia, todas las notas y sus promedios -->
+        <div class="card" style="margin-top:16px" th:if="${calificaciones != null}">
+            <h3 th:text="#{portalpadres.calificaciones}">Calificaciones</h3>
+            <p class="texto-secundario" th:if="${#lists.isEmpty(calificaciones)}" th:text="#{portalpadres.sinMaterias}">No hay materias para mostrar.</p>
+
+            <div class="form-group" style="max-width:360px" th:unless="${#lists.isEmpty(calificaciones)}">
+                <label for="selector-materia" th:text="#{common.materia}">Materia</label>
+                <select id="selector-materia">
+                    <option th:each="m, st : ${calificaciones}" th:value="${st.index}" th:text="${m.materia()}">Materia</option>
+                </select>
+            </div>
+
+            <div th:each="m, st : ${calificaciones}" class="materia-detalle" th:attr="data-materia=${st.index}"
+                 th:hidden="${st.index != 0}" style="margin-top:12px">
+                <div class="page-header" style="margin-bottom:6px">
+                    <h4 style="margin:0" th:text="${m.materia()}">Materia</h4>
+                    <div>
+                        <span class="texto-secundario" th:text="#{portalpadres.promedioAnual} + ': '">Promedio anual: </span>
+                        <strong th:text="${m.promedioAnual()} ?: '—'">-</strong>
+                        <span class="chip chip-verde" th:if="${m.promedioAnual() != null and m.aprobada()}" th:text="#{portalpadres.aprobada}">Aprobada</span>
+                        <span class="chip chip-naranja" th:if="${m.promedioAnual() != null and not m.aprobada()}" th:text="#{portalpadres.aRecuperar}">A recuperar</span>
+                    </div>
+                </div>
+
+                <th:block th:each="c : ${#numbers.sequence(1, 2)}"
+                          th:with="notasC=${c == 1 ? m.notasC1() : m.notasC2()}, promC=${c == 1 ? m.promedioC1() : m.promedioC2()}">
+                    <p style="margin:10px 0 4px;font-weight:600" th:text="#{portalpadres.cuatrimestreN(${c})}">Cuatrimestre 1</p>
+                    <div class="tabla-wrapper" th:if="${not #lists.isEmpty(notasC)}">
+                        <table>
+                            <thead><tr>
+                                <th th:text="#{alumnos.legajo.colFecha}">Fecha</th>
+                                <th th:text="#{alumnos.legajo.tipo}">Tipo</th>
+                                <th th:text="#{calificaciones.colEvaluacion}">Evaluacion</th>
+                                <th th:text="#{portalpadres.colNota}">Nota</th>
+                            </tr></thead>
+                            <tbody>
+                            <tr th:each="n : ${notasC}">
+                                <td data-label="Fecha" th:text="${#temporals.format(n.fecha(),'dd/MM/yyyy')}">-</td>
+                                <td data-label="Tipo" th:text="#{${'tipoEvaluacion.' + n.tipo().name()}}">-</td>
+                                <td data-label="Evaluacion" th:text="${n.titulo()}">-</td>
+                                <td data-label="Nota"><strong th:text="${n.valor()}">-</strong></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="texto-secundario" th:if="${#lists.isEmpty(notasC)}" th:text="#{portalpadres.sinNotas}">Sin notas cargadas en este cuatrimestre.</p>
+                    <p class="texto-secundario" th:if="${promC != null}">
+                        <span th:text="#{portalpadres.promedioCuatrimestre} + ': '">Promedio del cuatrimestre: </span><strong th:text="${promC}">-</strong>
+                    </p>
+                </th:block>
+            </div>
+        </div>
+
+        <!-- Materias adeudadas (previas) y resultado de cada mesa de examen -->
+        <div class="card" style="margin-top:16px" th:unless="${#lists.isEmpty(materiasAdeudadas)}">
+            <h3 th:text="#{mesas.adeudadas}">Materias adeudadas</h3>
+            <div th:replace="~{fragments/materias-adeudadas :: tabla(${materiasAdeudadas})}"></div>
+        </div>
+
+        <!-- Asistencia: cada dia con falta, cuanto sumo y por que -->
+        <div class="card" style="margin-top:16px" th:if="${diasConFalta != null}">
+            <h3 th:text="#{portalpadres.diasConFalta}">Dias con inasistencia</h3>
+            <p class="texto-secundario" th:text="#{portalpadres.diasConFaltaDesc}">Cada dia en que se registro una falta (1, 1/2 o 1/4) y el motivo.</p>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(diasConFalta)}">
+                <table data-mostrar-primeros="5" th:attr="data-texto-ver-todas=#{common.verTodas(${#lists.size(diasConFalta)})}">
+                    <thead><tr>
+                        <th th:text="#{alumnos.legajo.colFecha}">Fecha</th>
+                        <th th:text="#{portalpadres.colFaltaDia}">Falta del dia</th>
+                        <th th:text="#{portalpadres.colMotivo}">Motivo</th>
+                    </tr></thead>
+                    <tbody>
+                    <tr th:each="d : ${diasConFalta}">
+                        <td data-label="Fecha" th:text="${#temporals.format(d.fecha(),'dd/MM/yyyy')}">-</td>
+                        <td data-label="Falta del dia"><strong th:text="${d.totalDia()}">-</strong></td>
+                        <td data-label="Motivo">
+                            <div th:each="mf : ${d.motivos()}" style="margin-bottom:4px">
+                                <span th:text="#{${'turno.' + mf.turno().name()}} + ': '">Mañana: </span>
+                                <span th:text="#{${'tipoAsistencia.' + mf.tipo().name()}}">Ausente</span>
+                                <span class="texto-secundario" th:text="'(' + ${mf.valor()} + ')'">(1/2)</span>
+                                <span class="chip chip-verde" th:if="${mf.justificada()}" th:text="#{portalpadres.justificada}">Justificada</span>
+                                <div class="texto-secundario" th:if="${mf.tipoJustificacion() != null}" style="margin-left:12px">
+                                    <span th:text="#{${'justificacion.' + mf.tipoJustificacion()}}">Medica</span><span th:if="${mf.descripcionJustificacion() != null}" th:text="': ' + ${mf.descripcionJustificacion()}"></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario" th:if="${#lists.isEmpty(diasConFalta)}" th:text="#{portalpadres.sinFaltas}">No registra inasistencias en el ciclo lectivo.</p>
+        </div>
+
+        <!-- Historial disciplinario: cada observacion en detalle -->
+        <div class="card" style="margin-top:16px">
+            <h3 th:text="#{portalpadres.historialDisciplinario}">Historial Disciplinario</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(observaciones)}">
+                <table data-mostrar-primeros="5" th:attr="data-texto-ver-todas=#{common.verTodas(${#lists.size(observaciones)})}">
+                    <thead><tr>
+                        <th th:text="#{alumnos.legajo.colFecha}">Fecha</th>
+                        <th th:text="#{alumnos.legajo.colCategoria}">Categoria</th>
+                        <th th:text="#{alumnos.legajo.colDescripcion}">Descripcion</th>
+                        <th th:text="#{alumnos.legajo.colRegistradoPor}">Registrado por</th>
+                    </tr></thead>
+                    <tbody>
+                    <tr th:each="o : ${observaciones}">
+                        <td data-label="Fecha" th:text="${#temporals.format(o.fecha,'dd/MM/yyyy')}">-</td>
+                        <td data-label="Categoria" th:text="${o.categoria} ?: '-'">-</td>
+                        <td data-label="Descripcion" th:text="${o.descripcion}">-</td>
+                        <td data-label="Registrado por" th:text="${o.registradoPor.nombreCompleto}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="texto-secundario" th:if="${#lists.isEmpty(observaciones)}" th:text="#{portalpadres.sinObservaciones}">No registra observaciones disciplinarias en el ciclo lectivo.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px" th:if="${not #lists.isEmpty(reportes)}">
+            <h3 th:text="#{portalpadres.reportesDisponibles}">Reportes Disponibles</h3>
+            <ul>
+                <li th:each="r : ${reportes}">
+                    <a th:href="'/archivos?' + ${@firmaArchivoService.queryFirmado(r.pathArchivo)}" target="_blank"
+                       th:text="${r.tipo} + ' - ' + ${#temporals.format(r.generadoEn,'dd/MM/yyyy')}">-</a>
+                </li>
+            </ul>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

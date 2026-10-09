@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Alumnos del Workshop')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/workshops}" th:text="#{nav.workshops}">Workshops</a> &gt; <span th:text="${workshop.nombre}">Workshop</span></div>
+        <h1 th:text="${workshop.nombre}">Workshop</h1>
+
+        <div class="card">
+            <h3 th:text="#{workshops.alumnosC1}">Alumnos - Primer Cuatrimestre</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(alumnosC1)}">
+                <table>
+                    <thead><tr><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{workshops.colCurso}">Curso</th></tr></thead>
+                    <tbody>
+                    <tr th:each="acl : ${alumnosC1}">
+                        <td data-label="Alumno" th:text="${acl.alumno.nombreCompleto}">-</td>
+                        <td data-label="Curso" th:text="${acl.cursoDivision.nombreCompleto}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="estado-vacio" th:if="${#lists.isEmpty(alumnosC1)}"><p th:text="#{workshops.sinAlumnos}">No hay alumnos asignados.</p></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <h3 th:text="#{workshops.alumnosC2}">Alumnos - Segundo Cuatrimestre</h3>
+            <div class="tabla-wrapper" th:if="${not #lists.isEmpty(alumnosC2)}">
+                <table>
+                    <thead><tr><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{workshops.colCurso}">Curso</th></tr></thead>
+                    <tbody>
+                    <tr th:each="acl : ${alumnosC2}">
+                        <td data-label="Alumno" th:text="${acl.alumno.nombreCompleto}">-</td>
+                        <td data-label="Curso" th:text="${acl.cursoDivision.nombreCompleto}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="estado-vacio" th:if="${#lists.isEmpty(alumnosC2)}"><p th:text="#{workshops.sinAlumnos}">No hay alumnos asignados.</p></div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

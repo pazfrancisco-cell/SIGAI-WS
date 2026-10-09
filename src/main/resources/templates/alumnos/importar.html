@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Importar alumnos')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><a th:href="@{/alumnos}" th:text="#{nav.alumnos}">Alumnos</a> &gt; <span th:text="#{importacion.titulo}">Importar alumnos</span></div>
+        <h1 th:text="#{importacion.titulo}">Importar alumnos y tutores</h1>
+
+        <div class="card" style="margin-bottom:16px" th:if="${cicloActivo == null}">
+            <p class="error-mensaje" th:text="#{importacion.sinCiclo}">No hay un ciclo lectivo activo.</p>
+        </div>
+
+        <!-- Paso 1 y 2: plantilla y archivo -->
+        <div class="card" style="margin-bottom:16px" th:if="${importacion == null}">
+            <h3 th:text="#{importacion.paso1}">1. Descarga la plantilla</h3>
+            <p class="texto-secundario" th:text="#{importacion.paso1.detalle}">Completala con una fila por alumno.</p>
+            <a th:href="@{/alumnos/importar/plantilla}" class="btn btn-secondary" th:text="#{importacion.descargarPlantilla}">Descargar plantilla Excel</a>
+
+            <h3 style="margin-top:20px" th:text="#{importacion.paso2}">2. Subi el archivo completo</h3>
+            <form th:action="@{/alumnos/importar}" method="post" enctype="multipart/form-data" class="form-row" style="align-items:flex-end">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group" style="margin-bottom:0">
+                    <input type="file" name="archivo" accept=".xlsx,.xls,.csv" required/>
+                </div>
+                <button type="submit" class="btn btn-primary" th:text="#{importacion.revisar}">Revisar archivo</button>
+            </form>
+            <p class="texto-secundario" style="margin-top:8px" th:text="#{importacion.paso2.detalle}">Antes de guardar nada vas a ver una vista previa.</p>
+        </div>
+
+        <!-- Paso 3: vista previa -->
+        <th:block th:if="${importacion != null}">
+            <div class="card" style="margin-bottom:16px">
+                <p><strong th:text="${importacion.nombreArchivo}">alumnos.xlsx</strong></p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+                    <span class="chip chip-verde" th:text="#{importacion.resumen.validas(${importacion.pendientesValidas().size()})}">10 listas</span>
+                    <span class="chip chip-rojo" th:text="#{importacion.resumen.errores(${importacion.conErrores().size()})}">2 con errores</span>
+                    <span class="chip chip-azul" th:text="#{importacion.resumen.importadas(${importacion.importadas().size()})}">0 importadas</span>
+                </div>
+                <p class="texto-secundario" th:text="#{importacion.ayudaPortal}">Los tutores nuevos reciben por email su cuenta del Portal de Padres.</p>
+            </div>
+
+            <form id="form-importacion" th:action="@{/alumnos/importar/confirmar}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Filas con errores: editables -->
+                <th:block th:unless="${#lists.isEmpty(filasEditables)}">
+                    <h2 th:text="#{importacion.conErrores}">Filas con errores</h2>
+                    <p class="texto-secundario" th:text="#{importacion.conErrores.detalle}">Corregi los datos y toca Revalidar.</p>
+                    <div class="card fila-importacion" style="margin-bottom:12px" th:each="f : ${filasEditables}">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                            <strong th:text="#{importacion.fila(${f.numero})} + ' — ' + ${f.valor('apellido')} + ', ' + ${f.valor('nombre')}">Fila 3</strong>
+                            <button type="submit" class="btn btn-ghost compacto" th:formaction="@{/alumnos/importar/fila/{n}/quitar(n=${f.numero})}"
+                                    th:text="#{importacion.quitarFila}">Quitar fila</button>
+                        </div>
+                        <ul class="error-mensaje" style="margin:6px 0 10px 18px">
+                            <li th:each="e : ${f.errores}" th:text="${e}">Falta el DNI.</li>
+                        </ul>
+                        <div class="grilla-importacion">
+                            <label th:each="col : ${columnas}">
+                                <span th:text="#{'importacion.col.' + ${col}}">apellido</span>
+                                <input type="text" th:name="'f.' + ${f.numero} + '.' + ${col}" th:value="${f.valor(col)}"/>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="texto-secundario" th:if="${filasEditablesRestantes > 0}"
+                       th:text="#{importacion.restantes(${filasEditablesRestantes})}">Hay mas filas con errores.</p>
+                </th:block>
+
+                <!-- Filas listas para importar -->
+                <th:block th:unless="${#lists.isEmpty(importacion.pendientesValidas())}">
+                    <h2 th:text="#{importacion.validas}">Listas para importar</h2>
+                    <div class="tabla-wrapper">
+                        <table>
+                            <thead><tr>
+                                <th th:text="#{importacion.colFila}">Fila</th>
+                                <th th:text="#{importacion.colAlumno}">Alumno</th>
+                                <th>DNI</th>
+                                <th th:text="#{importacion.colCurso}">Curso</th>
+                                <th th:text="#{importacion.colTutores}">Tutores</th>
+                                <th></th>
+                            </tr></thead>
+                            <tbody>
+                            <tr th:each="f : ${importacion.pendientesValidas()}">
+                                <td data-label="Fila" th:text="${f.numero}">2</td>
+                                <td data-label="Alumno" th:text="${f.valor('apellido')} + ', ' + ${f.valor('nombre')}">Gomez, Lucia</td>
+                                <td data-label="DNI" th:text="${f.valor('dni')}">45123456</td>
+                                <td data-label="Curso" th:text="${f.valor('anio')} + '° ' + ${#strings.toUpperCase(f.valor('division'))}">1° A</td>
+                                <td data-label="Tutores">
+                                    <span th:text="${f.valor('tutor1_apellido')} + ', ' + ${f.valor('tutor1_nombre')}">Gomez, Carlos</span>
+                                    <span th:if="${f.tieneTutor(2)}" th:text="' / ' + ${f.valor('tutor2_apellido')} + ', ' + ${f.valor('tutor2_nombre')}"></span>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-ghost compacto" th:formaction="@{/alumnos/importar/fila/{n}/quitar(n=${f.numero})}"
+                                            th:text="#{importacion.quitarFila}">Quitar fila</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </th:block>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0" th:unless="${importacion.terminada()}">
+                    <button type="submit" class="btn btn-secondary" th:formaction="@{/alumnos/importar/revalidar}"
+                            th:unless="${#lists.isEmpty(filasEditables)}" th:text="#{importacion.revalidar}">Revalidar correcciones</button>
+                    <button type="submit" class="btn btn-primary" th:disabled="${cicloActivo == null}"
+                            th:attr="data-confirm=#{importacion.confirmar}" th:text="#{importacion.importar}">Importar filas validas</button>
+                </div>
+            </form>
+
+            <!-- Filas ya importadas -->
+            <th:block th:unless="${#lists.isEmpty(importacion.importadas())}">
+                <h2 th:text="#{importacion.importadas}">Importadas</h2>
+                <div class="tabla-wrapper">
+                    <table>
+                        <thead><tr>
+                            <th th:text="#{importacion.colFila}">Fila</th>
+                            <th th:text="#{importacion.colAlumno}">Alumno</th>
+                            <th th:text="#{importacion.colCurso}">Curso</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="f : ${importacion.importadas()}">
+                            <td data-label="Fila" th:text="${f.numero}">2</td>
+                            <td data-label="Alumno" th:text="${f.valor('apellido')} + ', ' + ${f.valor('nombre')}">Gomez, Lucia</td>
+                            <td data-label="Curso" th:text="${f.valor('anio')} + '° ' + ${#strings.toUpperCase(f.valor('division'))}">1° A</td>
+                            <td><a th:href="@{/alumnos/{id}(id=${f.alumnoId})}" class="btn btn-secondary compacto" th:text="#{importacion.verLegajo}">Ver legajo</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </th:block>
+
+            <form th:action="@{/alumnos/importar/descartar}" method="post" style="margin-top:16px"
+                  th:attr="data-confirm=${importacion.terminada()} ? null : #{importacion.confirmarDescartar}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-ghost"
+                        th:text="${importacion.terminada()} ? #{importacion.nuevaImportacion} : #{importacion.descartar}">Descartar</button>
+            </form>
+        </th:block>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head th:replace="~{fragments/head :: head(titulo='Grupos de Educacion Fisica')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.educacionFisica}">Educacion Fisica</span> &gt; <span th:text="#{edfisica.grupos}">Grupos</span></div>
+        <div class="page-header">
+            <h1 th:text="#{edfisica.grupos.h1}">Gestion de Grupos de Educacion Fisica</h1>
+            <div class="page-actions">
+                <a th:href="@{/educacion-fisica/catalogo-pruebas}" class="btn btn-secondary" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')" th:text="#{edfisica.catalogoPruebas}">Catalogo de Pruebas Fisicas</a>
+                <a th:href="@{/educacion-fisica/grupos/nuevo}" class="btn btn-primary" th:text="#{edfisica.nuevoGrupo}">+ Nuevo Grupo</a>
+            </div>
+        </div>
+
+        <div class="card" th:if="${resumenAptoFisico.pendientes() > 0}" style="margin-bottom:16px">
+            <div class="alert-banner" th:classappend="${resumenAptoFisico.plazoVencido()} ? 'warning' : 'info'" style="margin-bottom:12px">
+                <span th:text="#{edfisica.aptoFisico.resumenPendientes(${resumenAptoFisico.pendientes()}, ${#temporals.format(resumenAptoFisico.fechaLimite(),'dd/MM/yyyy')})}">
+                    Hay N alumnos sin apto fisico presentado. Fecha limite: dd/MM/yyyy.
+                </span>
+            </div>
+            <form th:action="@{/educacion-fisica/apto-fisico/verificar}" method="post" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-secondary compacto" th:text="#{edfisica.aptoFisico.verificarAhora}">Verificar vencimientos ahora</button>
+            </form>
+        </div>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(grupos)}">
+            <table>
+                <thead><tr><th th:text="#{edfisica.colNombre}">Nombre</th><th th:text="#{edfisica.colGenero}">Genero</th><th th:text="#{horarios.docente}">Docente</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="g : ${grupos}">
+                    <td data-label="Nombre" th:text="${g.nombre}">-</td>
+                    <td data-label="Genero" th:text="${g.genero}">-</td>
+                    <td data-label="Docente" th:text="${g.docente.nombreCompleto}">-</td>
+                    <td data-label="Acciones" style="display:flex;gap:6px">
+                        <a th:href="@{/educacion-fisica/pruebas(grupoId=${g.id})}" class="btn btn-icon" th:title="#{edfisica.irACargarResultados}">&#128203;</a>
+                        <a th:href="@{/educacion-fisica/grupos/{id}/editar(id=${g.id})}" class="btn btn-icon" th:title="#{accion.editar}">&#9998;</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(grupos)}"><h3 th:text="#{edfisica.vacioGrupos}">No hay grupos cargados</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

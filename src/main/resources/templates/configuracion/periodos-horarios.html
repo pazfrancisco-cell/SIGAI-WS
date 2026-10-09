@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Periodos Horarios')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.configuracion}">Configuracion</span> &gt; <span th:text="#{nav.horarios.estructuraDia}">Estructura del Dia</span></div>
+        <div class="page-header">
+            <h1 th:text="#{periodos.h1}">Estructura del Dia Escolar</h1>
+            <div class="page-actions"><a th:href="@{/configuracion/periodos-horarios/nuevo}" class="btn btn-primary" th:text="#{periodos.nuevo}">+ Nuevo Periodo</a></div>
+        </div>
+        <p class="texto-secundario" th:text="#{periodos.subtitulo}">Periodos, recreos y almuerzo. Afecta la grilla de horarios y la toma de asistencia por clase.</p>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(periodos)}">
+            <table>
+                <thead><tr><th th:text="#{periodos.colOrden}">Orden</th><th th:text="#{edfisica.colNombre}">Nombre</th><th th:text="#{periodos.colInicio}">Inicio</th><th th:text="#{periodos.colFin}">Fin</th><th th:text="#{alumnos.legajo.tipo}">Tipo</th><th th:text="#{common.acciones}">Acciones</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${periodos}">
+                    <td data-label="Orden" th:text="${p.orden}">1</td>
+                    <td data-label="Nombre" th:text="${p.nombre}">-</td>
+                    <td data-label="Inicio" th:text="${#temporals.format(p.horaInicio,'HH:mm')}">-</td>
+                    <td data-label="Fin" th:text="${#temporals.format(p.horaFin,'HH:mm')}">-</td>
+                    <td data-label="Tipo">
+                        <span class="chip chip-verde" th:if="${p.tipo.name() == 'CLASE'}" th:text="#{periodos.tipoClase}">Clase</span>
+                        <span class="chip chip-naranja" th:if="${p.tipo.name() == 'RECREO'}" th:text="#{periodos.tipoRecreo}">Recreo</span>
+                        <span class="chip chip-gris" th:if="${p.tipo.name() == 'ALMUERZO'}" th:text="#{periodos.tipoAlmuerzo}">Almuerzo</span>
+                    </td>
+                    <td data-label="Acciones" style="display:flex;gap:6px">
+                        <a th:href="@{/configuracion/periodos-horarios/{id}/editar(id=${p.id})}" class="btn btn-icon">&#9998;</a>
+                        <form th:action="@{/configuracion/periodos-horarios/{id}/eliminar(id=${p.id})}" method="post"
+                              th:attr="data-confirm=#{periodos.confirmEliminar}" data-confirm="Se eliminara este periodo de la estructura del dia. ¿Confirmar?">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-icon">&#128465;</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(periodos)}"><h3 th:text="#{periodos.vacio}">No hay periodos configurados</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

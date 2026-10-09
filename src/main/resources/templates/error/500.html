@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Error')}"></head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card" style="text-align:center">
+        <h1 th:text="#{error.500.h1}">Ocurrio un error</h1>
+        <p th:text="${mensaje} ?: #{error.500.mensaje}">Error</p>
+        <a class="btn btn-primary" th:href="@{/}" th:text="#{error.volverInicio}">Volver al inicio</a>
+    </div>
+</div>
+</body>
+</html>

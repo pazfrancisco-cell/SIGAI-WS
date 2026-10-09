@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Asistencia - Preceptor')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><span th:text="#{nav.asistencia}">Asistencia</span> &gt; <span th:text="#{asistencia.preceptorLabel}">Preceptor</span></div>
+        <h1 th:text="#{asistencia.preceptor.h1}">Toma de Asistencia - Preceptor</h1>
+        <p class="texto-secundario"><span th:text="#{asistencia.editandoEl}">Editando el</span>
+            <strong th:text="${#temporals.format(fecha,'dd/MM/yyyy')}">Fecha</strong>
+            <span th:if="${fecha == hoy}" th:text="#{asistencia.hoy}">(hoy)</span>
+        </p>
+
+        <form method="get" th:action="@{/asistencia/preceptor}" class="filtros-bar">
+            <input type="hidden" name="fecha" th:value="${#temporals.format(fecha,'yyyy-MM-dd')}"/>
+            <input type="hidden" name="anio" th:value="${anioSel}"/>
+            <input type="hidden" name="mes" th:value="${mesSel}"/>
+            <div class="form-group">
+                <label th:text="#{common.cursoDivision}">Curso/Division</label>
+                <select name="cursoDivisionId" onchange="this.form.submit()">
+                    <option th:each="cd : ${cursosDivisiones}" th:value="${cd.id}" th:text="${cd.nombreCompleto}"
+                            th:selected="${cd.id == divisionSeleccionada}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{asistencia.turno}">Turno</label>
+                <select name="turno" onchange="this.form.submit()">
+                    <option value="MANANA" th:selected="${turnoSeleccionado.name() == 'MANANA'}" th:text="#{asistencia.turnoManana}">Mañana</option>
+                    <option value="TARDE" th:selected="${turnoSeleccionado.name() == 'TARDE'}" th:text="#{asistencia.turnoTarde}">Tarde</option>
+                </select>
+            </div>
+        </form>
+
+        <div class="card" style="margin-bottom:16px"
+             th:with="mesAnterior=${mesSel == 1 ? 12 : mesSel - 1}, anioMesAnterior=${mesSel == 1 ? anioSel - 1 : anioSel},
+                      mesSiguiente=${mesSel == 12 ? 1 : mesSel + 1}, anioMesSiguiente=${mesSel == 12 ? anioSel + 1 : anioSel}">
+            <div class="page-header">
+                <h3 th:text="#{asistencia.calendario}">Calendario</h3>
+                <div class="page-actions">
+                    <a th:href="@{/asistencia/preceptor(cursoDivisionId=${divisionSeleccionada},turno=${turnoSeleccionado},fecha=${#temporals.format(fecha,'yyyy-MM-dd')},anio=${anioMesAnterior},mes=${mesAnterior})}" class="btn btn-ghost compacto">&#8592; <span th:text="#{asistencia.mesAnterior}">Mes anterior</span></a>
+                    <span th:text="${mesSel} + '/' + ${anioSel}" style="align-self:center;font-weight:600"></span>
+                    <a th:href="@{/asistencia/preceptor(cursoDivisionId=${divisionSeleccionada},turno=${turnoSeleccionado},fecha=${#temporals.format(fecha,'yyyy-MM-dd')},anio=${anioMesSiguiente},mes=${mesSiguiente})}" class="btn btn-ghost compacto"><span th:text="#{asistencia.mesSiguiente}">Mes siguiente</span> &#8594;</a>
+                </div>
+            </div>
+            <table class="calendario-asistencia tabla-grilla" style="width:100%;text-align:center;border-collapse:collapse">
+                <thead>
+                <tr><th th:text="#{asistencia.dia.lun}">Lun</th><th th:text="#{asistencia.dia.mar}">Mar</th><th th:text="#{asistencia.dia.mie}">Mie</th><th th:text="#{asistencia.dia.jue}">Jue</th><th th:text="#{asistencia.dia.vie}">Vie</th><th th:text="#{asistencia.dia.sab}">Sab</th><th th:text="#{asistencia.dia.dom}">Dom</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="semana : ${semanas}">
+                    <td th:each="dia : ${semana}" style="padding:6px"
+                        th:with="fechaDia=${dia != 0} ? ${T(java.time.LocalDate).of(anioSel, mesSel, dia)} : null">
+                        <a th:if="${dia != 0 and !fechaDia.isAfter(hoy)}"
+                           th:href="@{/asistencia/preceptor(cursoDivisionId=${divisionSeleccionada},turno=${turnoSeleccionado},fecha=${#temporals.format(fechaDia,'yyyy-MM-dd')},anio=${anioSel},mes=${mesSel})}"
+                           th:text="${dia}" class="dia-calendario"
+                           th:classappend="${fechaDia == fecha} ? 'dia-seleccionado' : (${diasConRegistro.contains(dia)} ? 'dia-con-registro' : '')"></a>
+                        <span th:if="${dia != 0 and fechaDia.isAfter(hoy)}" th:text="${dia}" class="dia-calendario dia-futuro"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="form-row" style="margin-top:8px;gap:16px">
+                <span class="texto-secundario"><span class="dia-calendario dia-seleccionado" style="display:inline-flex">&nbsp;</span> <span th:text="#{asistencia.leyendaEditando}">Dia que estas editando</span></span>
+                <span class="texto-secundario"><span class="dia-calendario dia-con-registro" style="display:inline-flex">&nbsp;</span> <span th:text="#{asistencia.leyendaCargada}">Ya tiene asistencia cargada</span></span>
+                <span class="texto-secundario"><span class="dia-calendario dia-futuro" style="display:inline-flex">&nbsp;</span> <span th:text="#{asistencia.leyendaFuturo}">Dia futuro (no editable)</span></span>
+            </div>
+        </div>
+
+        <form th:action="@{/asistencia/preceptor}" method="post" th:if="${alumnos != null}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="cursoDivisionId" th:value="${divisionSeleccionada}"/>
+            <input type="hidden" name="turno" th:value="${turnoSeleccionado}"/>
+            <input type="hidden" name="fecha" th:value="${#temporals.format(fecha,'yyyy-MM-dd')}"/>
+
+            <div class="barra-asistencia">
+                <span class="titulo" th:text="#{asistencia.marcarTodos}">Marcar a todos:</span>
+                <button type="button" class="btn btn-success compacto" id="btn-todos-presentes" th:text="#{asistencia.todosPresentes}">Todos presentes</button>
+                <span class="resumen-asistencia" id="resumen-asistencia"></span>
+            </div>
+
+            <div class="tabla-wrapper">
+                <table class="tabla-asistencia">
+                    <thead><tr><th>#</th><th th:text="#{alumnos.colApellidoNombre}">Apellido y Nombre</th><th th:text="#{common.estado}">Estado</th></tr></thead>
+                    <tbody>
+                    <tr th:each="alumno, iter : ${alumnos}" th:with="tipoActual=${tipoPorAlumno.get(alumno.id)}">
+                        <td data-label="#" th:text="${iter.count}">1</td>
+                        <td data-label="Alumno" th:text="${alumno.nombreCompleto}">-</td>
+                        <td data-label="Estado">
+                            <input type="hidden" th:name="|items[${iter.index}].alumnoId|" th:value="${alumno.id}"/>
+                            <input type="hidden" th:name="|items[${iter.index}].tipo|"
+                                   th:value="${tipoActual != null ? tipoActual.name() : 'PRESENTE'}" class="input-tipo"/>
+                            <div class="grupo-estado">
+                                <button type="button" class="btn-estado presente" data-tipo="PRESENTE" th:title="#{asistencia.tipo.presente}" title="Presente">P</button>
+                                <button type="button" class="btn-estado ausente" data-tipo="AUSENTE" th:title="#{asistencia.tipo.ausente}" title="Ausente">A</button>
+                                <button type="button" class="btn-estado justificado" data-tipo="AUSENTE_JUSTIFICADO" th:title="#{asistencia.tipo.ausenteJustificado}" title="Ausente justificado">AJ</button>
+                                <button type="button" class="btn-estado tarde" data-tipo="LLEGADA_TARDE" th:title="#{asistencia.tipo.llegadaTarde}" title="Llegada tarde">T</button>
+                            </div>
+                            <select class="select-otros">
+                                <option value="" th:text="#{asistencia.otraSituacion}">Otra situacion...</option>
+                                <option value="UNIFORME_INCOMPLETO" th:text="#{asistencia.tipo.uniformeIncompleto}">1/4 Uniforme incompleto</option>
+                                <option value="MEDIA_FALTA" th:text="#{asistencia.tipo.mediaFalta}">1/2 Falta</option>
+                            </select>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:12px" th:text="#{asistencia.guardar}">Guardar Asistencia</button>
+        </form>
+
+        <div class="estado-vacio" th:if="${alumnos == null or alumnos.isEmpty()}">
+            <h3 th:text="#{asistencia.vacioDivision}">No hay alumnos en esta division</h3>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

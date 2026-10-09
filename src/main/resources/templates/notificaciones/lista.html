@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Notificaciones')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb" th:text="#{notificaciones.titulo}">Notificaciones</div>
+        <div class="page-header">
+            <h1 th:text="#{notificaciones.titulo}">Notificaciones</h1>
+            <div class="page-actions" th:if="${notificacionesNoLeidasCount != null and notificacionesNoLeidasCount > 0}">
+                <form th:action="@{/notificaciones/marcar-todas}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-secondary" th:text="#{notificaciones.marcarTodas}">Marcar todas como leidas</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="lista-items" th:if="${not #lists.isEmpty(notificaciones)}">
+            <a th:each="n : ${notificaciones}" th:href="@{/notificaciones/{id}(id=${n.id})}" class="item-lista"
+               th:style="${n.leida} ? '' : 'border-left:4px solid var(--azul-acento)'">
+                <span style="flex:1;min-width:0">
+                    <strong th:if="${not n.leida}" th:text="${n.titulo}">Titulo</strong>
+                    <span th:if="${n.leida}" th:text="${n.titulo}">Titulo</span>
+                    <br/>
+                    <span class="texto-secundario" th:text="${n.contenido}">Contenido</span>
+                </span>
+                <span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+                    <span class="texto-secundario" th:text="${#temporals.format(n.creadoEn,'dd/MM/yyyy HH:mm')}">fecha</span>
+                    <span class="chip chip-azul" th:if="${not n.leida}" th:text="#{notificaciones.nueva}">Nueva</span>
+                </span>
+            </a>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(notificaciones)}">
+            <div class="icono">&#128276;</div>
+            <h3 th:text="#{notificaciones.vacio}">No tenes notificaciones</h3>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

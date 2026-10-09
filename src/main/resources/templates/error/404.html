@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='No encontrado')}"></head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card" style="text-align:center">
+        <h1>404</h1>
+        <p th:text="${mensaje} ?: #{error.404.mensaje}">No encontrado</p>
+        <a class="btn btn-primary" th:href="@{/}" th:text="#{error.volverInicio}">Volver al inicio</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>ar.edu.wellspring</groupId>
+    <artifactId>sigai-ws</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>sigai-ws</name>
+    <description>Sistema Integral de Gestion Academica Institucional - Wellspring School</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!-- Version fijada (en vez de dejarla en manos del dependency management de
+             spring-boot-starter-parent) porque la autenticacion de Windows integrada
+             (integratedSecurity=true) requiere la DLL nativa mssql-jdbc_auth de la
+             MISMA version exacta del driver. Ver docs/DEV_GUIDE.md. -->
+        <mssql-jdbc.version>12.8.1.jre11</mssql-jdbc.version>
+        <openpdf.version>2.0.3</openpdf.version>
+        <poi.version>5.3.0</poi.version>
+        <testcontainers.version>1.20.1</testcontainers.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Core web + templating -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+
+        <!-- Persistence -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql-jdbc.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!--
+          Autenticacion de Windows integrada (integratedSecurity=true). Trae la DLL
+          nativa mssql-jdbc_auth-<version>-x64.dll requerida por el driver para
+          autenticar con las credenciales de Windows del usuario actual (sin
+          usuario/password propios). DEBE coincidir exactamente con la version de
+          mssql-jdbc de arriba. Ver docs/DEV_GUIDE.md seccion "Autenticacion de
+          Windows con SQL Server".
+        -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc_auth</artifactId>
+            <!-- OJO: este artifactId versiona la arquitectura DENTRO del numero de
+                 version (ej. "12.8.1.x64"), no como classifier. Debe coincidir con
+                 la version base de mssql-jdbc de arriba. Ademas este artefacto NO
+                 publica un .jar, solo un .dll suelto -> hace falta <type>dll</type>. -->
+            <version>12.8.1.x64</version>
+            <type>dll</type>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-sqlserver</artifactId>
+        </dependency>
+
+        <!-- Security (sesiones de servidor, ver docs/DECISIONS.md ADR-001) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Mail (SMTP interno, seccion 3.2 del documento) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- AOP (usado para auditoria transversal, ver common/audit) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Generacion de PDF: OpenPDF (ver docs/DECISIONS.md ADR-002) -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>${openpdf.version}</version>
+        </dependency>
+
+        <!-- Exportacion a Excel de los reportes tabulares (seccion 5.8.3) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mssqlserver</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                    <!--
+                      -Djava.library.path: requerido por integratedSecurity=true (autenticacion
+                      de Windows con SQL Server), el driver busca ahi la DLL nativa (copiada por
+                      maven-dependency-plugin mas abajo).
+                      -Djava.security.properties: solo necesario contra un SQL Server MUY viejo
+                      (2008 R2 o anterior) que no soporta TLS 1.2+; re-habilita TLS 1.0 para esta
+                      app puntual, sin tocar la configuracion global del JDK. Quitar este flag al
+                      migrar a una version de SQL Server moderna (2019+).
+                      Rutas entre comillas porque el proyecto puede vivir en una carpeta con
+                      espacios (ej. "Proyecto Seminario").
+                    -->
+                    <jvmArguments>-Djava.library.path="${project.basedir}/native" -Djava.security.properties="${project.basedir}/native/allow-tls10.security"</jvmArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-mssql-auth-dll</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.microsoft.sqlserver</groupId>
+                                    <artifactId>mssql-jdbc_auth</artifactId>
+                                    <version>12.8.1.x64</version>
+                                    <type>dll</type>
+                                    <destFileName>mssql-jdbc_auth-12.8.1.x64.dll</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.basedir}/native</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

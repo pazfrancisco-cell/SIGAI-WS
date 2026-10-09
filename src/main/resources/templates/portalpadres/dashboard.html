@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Portal de Padres')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{portalpadres.titulo}">Portal de Padres</div>
+        <h1 th:text="#{nav.misHijos}">Mis Hijos</h1>
+
+        <div class="form-row">
+            <div class="card" style="flex:1;min-width:260px" th:each="hijo : ${hijos}">
+                <h3 th:text="${hijo.nombreCompleto}">-</h3>
+                <p class="texto-secundario" th:text="${hijo.localidad}">-</p>
+                <a th:href="@{/portal-padres/alumno/{id}(id=${hijo.id})}" class="btn btn-primary" style="width:100%" th:text="#{portalpadres.verDetalleCompleto}">Ver todo el detalle</a>
+            </div>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(hijos)}">
+            <h3 th:text="#{portalpadres.vacioHijos}">No hay alumnos vinculados a tu cuenta</h3>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <div class="page-header">
+                <h3 th:text="#{portalpadres.avisosEscuela}">Avisos de la escuela</h3>
+                <div class="page-actions"><a th:href="@{/portal-padres/comunicados}" class="btn btn-secondary compacto" th:text="#{dashboard.directivo.verTodos}">Ver todos</a></div>
+            </div>
+            <div class="lista-items" th:if="${not #lists.isEmpty(comunicadosRecientes)}">
+                <a th:each="c : ${comunicadosRecientes}" th:href="@{/portal-padres/comunicados/{id}(id=${c.id})}" class="item-lista">
+                    <span>
+                        <strong th:text="${c.asunto}">Asunto</strong><br/>
+                        <span class="texto-secundario" th:text="${#temporals.format(c.creadoEn,'dd/MM/yyyy HH:mm')}">Fecha</span>
+                    </span>
+                    <span class="chip chip-verde" th:if="${comunicadosLeidosIds.contains(c.id)}" th:text="#{portalpadres.leidoChip}">Leido</span>
+                    <span class="chip chip-naranja" th:unless="${comunicadosLeidosIds.contains(c.id)}" th:text="#{portalpadres.sinLeer}">Sin leer</span>
+                </a>
+            </div>
+            <div class="estado-vacio" th:if="${#lists.isEmpty(comunicadosRecientes)}"><h3 th:text="#{portalpadres.sinComunicados}">No hay comunicados</h3></div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

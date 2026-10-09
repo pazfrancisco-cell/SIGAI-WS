@@ -1,0 +1,15 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="toasts" class="toast-container">
+    <div class="toast success" data-tipo="success" th:if="${mensajeExito}"
+         th:attr="data-undo-id=${undoId}, data-csrf-param=${_csrf.parameterName}, data-csrf-token=${_csrf.token}">
+        <span th:text="${mensajeExito}">Operacion exitosa</span>
+        <span class="toast-acciones" th:if="${undoId}">
+            <button type="button" class="btn-deshacer" th:text="#{accion.deshacer}">Deshacer</button>
+            <span class="contador-deshacer">10s</span>
+        </span>
+        <button type="button" class="toast-cerrar" style="margin-left:auto;background:none;border:none;cursor:pointer">&times;</button>
+    </div>
+    <div class="toast error" data-tipo="error" th:if="${errorMensaje}">
+        <span th:text="${errorMensaje}">Ocurrio un error</span>
+        <button type="button" class="toast-cerrar" style="margin-left:auto;background:none;border:none;cursor:pointer">&times;</button>
+    </div>
+</div>

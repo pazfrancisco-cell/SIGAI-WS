@@ -1,0 +1,13 @@
+# Perfil usado por los tests. Los tests unitarios (Mockito) no levantan contexto
+# Spring y no lo necesitan; los de integracion (Testcontainers) sobreescriben
+# spring.datasource.* dinamicamente con @DynamicPropertySource.
+spring:
+  mail:
+    host: localhost
+    port: 1025
+
+sigai:
+  crypto:
+    # Clave fija SOLO para tests (NUNCA usar en un entorno real), 32 bytes validos
+    # para AES-256 generados con: openssl rand -base64 32
+    aes-key: YzPrhiM6xTTOeBf9tJ+SqULGkV85MTPg9G+jMYZK0ww=

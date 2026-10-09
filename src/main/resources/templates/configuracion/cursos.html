@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Cursos y Divisiones')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb"><a th:href="@{/configuracion}" th:text="#{nav.configuracion}">Configuracion</a> &gt; <span th:text="#{cursos.titulo}">Cursos y Divisiones</span></div>
+        <h1 th:text="#{cursos.titulo}">Cursos y Divisiones</h1>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 th:text="#{cursos.nuevo}">Nuevo curso</h3>
+            <form th:action="@{/configuracion/cursos}" method="post" class="form-row" style="align-items:flex-end;flex-wrap:wrap">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group" style="margin-bottom:0">
+                    <label th:text="#{alumnos.form.anioCurso}">Año</label>
+                    <select name="anio">
+                        <option th:each="n : ${#numbers.sequence(1,6)}" th:value="${n}" th:text="${n + '°'}"></option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;max-width:110px">
+                    <label th:text="#{alumnos.form.division}">Division</label>
+                    <input type="text" name="division" maxlength="1" required placeholder="C" style="text-transform:uppercase"/>
+                </div>
+                <div class="form-group" style="margin-bottom:0;min-width:220px">
+                    <label th:text="#{cursos.copiarMaterias}">Copiar materias de</label>
+                    <select name="copiarMateriasDeId">
+                        <option value="" th:text="#{cursos.sinMaterias}">(no copiar, sin materias)</option>
+                        <option th:each="c : ${cursosActivos}" th:value="${c.id}" th:text="${c.nombreCompleto}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" th:text="#{cursos.crear}">Crear curso</button>
+            </form>
+            <p class="texto-secundario" style="margin-top:8px" th:text="#{cursos.copiarHint}">Si no copias materias, el curso queda sin materias y tenes que asignarlas desde Materias.</p>
+        </div>
+
+        <div class="tabla-wrapper">
+            <table>
+                <thead><tr>
+                    <th th:text="#{cursos.colCurso}">Curso</th>
+                    <th th:text="#{cursos.colAlumnos}">Alumnos (ciclo activo)</th>
+                    <th th:text="#{cursos.colMaterias}">Materias</th>
+                    <th th:text="#{common.estado}">Estado</th>
+                    <th th:text="#{common.acciones}">Acciones</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="r : ${cursos}" th:with="c=${r.curso()}">
+                    <td data-label="Curso"><strong th:text="${c.nombreCompleto}">1° A</strong></td>
+                    <td data-label="Alumnos" th:text="${r.alumnosCicloActivo()}">0</td>
+                    <td data-label="Materias" th:text="${r.materias()}">0</td>
+                    <td data-label="Estado">
+                        <span class="chip chip-verde" th:if="${c.activa}" th:text="#{cursos.activo}">Activo</span>
+                        <span class="chip chip-gris" th:unless="${c.activa}" th:text="#{cursos.inactivo}">Inactivo</span>
+                    </td>
+                    <td data-label="Acciones" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                        <form th:action="@{/configuracion/cursos/{id}/division(id=${c.id})}" method="post" style="display:inline-flex;gap:4px;align-items:center">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="text" name="division" maxlength="1" th:value="${c.division}" required style="width:46px;text-transform:uppercase" th:title="#{alumnos.form.division}"/>
+                            <button type="submit" class="btn btn-ghost compacto" th:text="#{cursos.cambiarLetra}">Cambiar letra</button>
+                        </form>
+                        <form th:if="${c.activa}" th:action="@{/configuracion/cursos/{id}/desactivar(id=${c.id})}" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-secondary compacto" th:text="#{cursos.desactivar}">Desactivar</button>
+                        </form>
+                        <form th:unless="${c.activa}" th:action="@{/configuracion/cursos/{id}/activar(id=${c.id})}" method="post" style="display:inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-secondary compacto" th:text="#{cursos.activar}">Reactivar</button>
+                        </form>
+                        <form th:action="@{/configuracion/cursos/{id}/eliminar(id=${c.id})}" method="post" style="display:inline"
+                              th:attr="data-confirm=#{cursos.confirmEliminar(${c.nombreCompleto})}">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-danger compacto" th:text="#{accion.eliminar}">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="texto-secundario" style="margin-top:12px" th:text="#{cursos.ayuda}">Un curso con historial no se puede eliminar: desactivalo. Deja de aparecer para cargas nuevas, pero sus datos se siguen viendo.</p>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

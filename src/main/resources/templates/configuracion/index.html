@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head th:replace="~{fragments/head :: head(titulo='Configuracion')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb" th:text="#{nav.configuracion}">Configuracion</div>
+        <h1 th:text="#{configuracion.h1}">Configuracion</h1>
+        <p class="texto-secundario" style="margin-top:-14px;margin-bottom:24px" th:text="#{configuracion.bajada}">Accesos rapidos a la configuracion del sistema, con el dato vigente de cada una.</p>
+
+        <div class="grilla-tareas">
+            <a th:href="@{/configuracion/parametros-academicos}" class="tarjeta-tarea" sec:authorize="hasRole('SUPERADMIN')">
+                <span class="icono-tarea azul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.4h5"/><path d="M13 7.4h7"/><path d="M4 16.6h7"/><path d="M15 16.6h5"/><circle cx="11" cy="7.4" r="2.2"/><circle cx="13" cy="16.6" r="2.2"/></svg></span>
+                <span class="titulo" th:text="#{nav.parametrosAcademicos}">Reglas del año escolar</span>
+                <span class="desc" th:text="#{configuracion.parametros.desc}">Nota minima, tope de faltas, escalas.</span>
+                <span class="dato-actual" th:text="#{configuracion.parametros.dato(${parametro.umbralFalta4CondicionLibre}, ${parametro.notaMinimaAprobacion})}">Tope de faltas: 28 · Nota minima: 7.0</span>
+            </a>
+            <a th:href="@{/configuracion/cursos}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2"/><path d="M3.6 9.6h16.8"/><path d="M9.6 9.6v9.8"/></svg></span>
+                <span class="titulo" th:text="#{cursos.titulo}">Cursos y Divisiones</span>
+                <span class="desc" th:text="#{configuracion.cursos.desc}">Que cursos y divisiones tiene el colegio.</span>
+            </a>
+            <a th:href="@{/configuracion/promocion}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO')">
+                <span class="icono-tarea violeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.4h4.4v-4.4h4.4V9.6h4.4V5.2H20"/><path d="M16.4 2.8 20 5.2l-2.4 3.4"/></svg></span>
+                <span class="titulo" th:text="#{promocion.titulo}">Promocion de alumnos</span>
+                <span class="desc" th:text="#{configuracion.promocion.desc}">Quien pasa, repite o egresa al empezar el ciclo.</span>
+            </a>
+            <a th:href="@{/configuracion/materias}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span>
+                <span class="titulo" th:text="#{nav.materias.materias}">Materias</span>
+                <span class="desc" th:text="#{configuracion.materias.desc}">Que materias se dictan y en que cursos.</span>
+            </a>
+            <a th:href="@{/workshops}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea violeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.6h11.4a2 2 0 0 1 2 2v14.8H7a2 2 0 0 1-2-2z"/><path d="M18.4 17.4H7a2 2 0 0 0-2 2"/></svg></span>
+                <span class="titulo" th:text="#{nav.workshops}">Workshops</span>
+                <span class="desc" th:text="#{configuracion.workshops.desc}">Catalogo y asignacion de workshops.</span>
+            </a>
+            <a th:href="@{/configuracion/aulas}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea gris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 20.6V6.6L12 3.4l7.6 3.2v14"/><path d="M9.4 20.6v-5.2h5.2v5.2"/></svg></span>
+                <span class="titulo" th:text="#{nav.aulas}">Aulas</span>
+                <span class="desc" th:text="#{configuracion.aulas.desc}">Aulas disponibles y su capacidad.</span>
+            </a>
+            <a th:href="@{/configuracion/ciclos-lectivos}" class="tarjeta-tarea" sec:authorize="hasRole('SUPERADMIN')">
+                <span class="icono-tarea naranja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.6" y="5.6" width="16.8" height="15" rx="2"/><path d="M3.6 10.2h16.8"/><path d="M8.4 3.4v4"/><path d="M15.6 3.4v4"/></svg></span>
+                <span class="titulo" th:text="#{nav.horarios.ciclosLectivos}">Ciclos Lectivos</span>
+                <span class="desc" th:text="#{configuracion.ciclos.desc}">Fechas de cuatrimestres y cierre de año.</span>
+            </a>
+            <a th:href="@{/configuracion/periodos-horarios}" class="tarjeta-tarea" sec:authorize="hasRole('SUPERADMIN')">
+                <span class="icono-tarea naranja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.6" y="5.6" width="16.8" height="15" rx="2"/><path d="M3.6 10.2h16.8"/><path d="M8.4 3.4v4"/><path d="M15.6 3.4v4"/></svg></span>
+                <span class="titulo" th:text="#{nav.horarios.estructuraDia}">Estructura del Dia</span>
+                <span class="desc" th:text="#{configuracion.periodos.desc}">Periodos, recreos y almuerzo.</span>
+            </a>
+            <a th:href="@{/configuracion/plantillas-email}" class="tarjeta-tarea" sec:authorize="hasRole('SUPERADMIN')">
+                <span class="icono-tarea rojo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.4h5"/><path d="M13 7.4h7"/><path d="M4 16.6h7"/><path d="M15 16.6h5"/><circle cx="11" cy="7.4" r="2.2"/><circle cx="13" cy="16.6" r="2.2"/></svg></span>
+                <span class="titulo" th:text="#{nav.plantillasEmail}">Plantillas de Email</span>
+                <span class="desc" th:text="#{configuracion.plantillas.desc}">Texto de los emails automaticos del sistema.</span>
+            </a>
+            <a th:href="@{/educacion-fisica/grupos}" class="tarjeta-tarea" sec:authorize="hasAnyRole('SUPERADMIN','DIRECTIVO','ADMINISTRATIVO')">
+                <span class="icono-tarea verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7.5" r="3.8"/><path d="M3.5 20.5v-1.2A4.8 4.8 0 0 1 8.3 14.5h3.4a4.8 4.8 0 0 1 4.8 4.8v1.2"/></svg></span>
+                <span class="titulo" th:text="#{nav.materias.edfisicaGrupos}">Educacion Fisica - Grupos</span>
+                <span class="desc" th:text="#{configuracion.edfisica.desc}">Grupos, pruebas fisicas y catalogo.</span>
+            </a>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

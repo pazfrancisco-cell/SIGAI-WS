@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Usuario')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div class="breadcrumb"><a th:href="@{/usuarios}" th:text="#{nav.usuarios}">Usuarios</a> &gt; <span th:text="${usuarioForm.id != null} ? #{accion.editar} : #{accion.nuevo}"></span></div>
+        <h1 th:text="${usuarioForm.id != null} ? #{usuarios.tituloEditar} : #{usuarios.tituloNuevo}">Usuario</h1>
+
+        <form th:action="${usuarioForm.id != null} ? @{/usuarios/{id}(id=${usuarioForm.id})} : @{/usuarios}"
+              th:object="${usuarioForm}" method="post" class="card">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" th:field="*{id}"/>
+
+            <div class="form-group">
+                <label th:text="#{usuarios.nombreCompletoRequerido}">Nombre completo*</label>
+                <input type="text" th:field="*{nombreCompleto}" th:classappend="${#fields.hasErrors('nombreCompleto')} ? 'error'"/>
+                <div class="error-mensaje" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}"></div>
+            </div>
+            <div class="form-group">
+                <label th:text="#{usuarios.emailInstRequerido}">Email institucional*</label>
+                <input type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'error'"/>
+                <div class="error-mensaje" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+            <div class="form-group">
+                <label th:text="#{usuarios.rolesHint}">Roles*</label>
+                <div class="checkbox-row" th:each="rol : ${T(ar.edu.wellspring.sigaiws.common.enums.RolNombre).values()}">
+                    <input type="checkbox" th:id="${'rol-' + rol}" name="roles" th:value="${rol}"
+                           th:checked="${usuarioForm.roles != null and usuarioForm.roles.contains(rol)}"/>
+                    <label th:for="${'rol-' + rol}" style="margin:0" th:text="${rol.etiqueta}">Rol</label>
+                </div>
+                <div class="error-mensaje" th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}"></div>
+            </div>
+
+            <div class="form-group">
+                <label th:text="#{usuarios.especialidadesDocente}">Especialidades de Docente</label>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="esDocenteEducacionFisica" th:field="*{esDocenteEducacionFisica}"/>
+                    <label for="esDocenteEducacionFisica" style="margin:0" th:text="#{usuarios.esDocenteEducacionFisica}">Es docente de Educacion Fisica</label>
+                </div>
+                <div class="checkbox-row" style="margin-top:6px">
+                    <input type="checkbox" id="esDocenteWorkshop" th:field="*{esDocenteWorkshop}"/>
+                    <label for="esDocenteWorkshop" style="margin:0" th:text="#{usuarios.esDocenteWorkshop}">Es docente de Workshop</label>
+                </div>
+                <div class="texto-secundario" style="margin-top:6px" th:text="#{usuarios.especialidadesDocenteHint}">Solo tiene efecto si el usuario tiene el rol Docente.</div>
+            </div>
+
+            <div class="page-actions">
+                <a th:href="@{/usuarios}" class="btn btn-secondary" th:text="#{accion.cancelar}">Cancelar</a>
+                <button type="submit" class="btn btn-primary" th:text="#{accion.guardar}">Guardar</button>
+            </div>
+        </form>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

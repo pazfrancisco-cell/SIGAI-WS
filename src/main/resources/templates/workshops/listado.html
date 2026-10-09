@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Workshops')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb" th:text="#{nav.workshops}">Workshops</div>
+        <div class="page-header">
+            <h1 th:text="#{workshops.listado.h1}">Gestion de Workshops</h1>
+            <div class="page-actions">
+                <a th:href="@{/configuracion/workshops/nuevo}" class="btn btn-secondary" th:text="#{workshops.nuevoCatalogo}">+ Nuevo Workshop (catalogo)</a>
+                <a th:href="@{/workshops/asignacion-masiva-c1}" class="btn btn-secondary" th:text="#{workshops.asignacionMasivaC1}">Asignacion masiva C1</a>
+                <a th:href="@{/workshops/asignacion-masiva}" class="btn btn-primary" th:text="#{workshops.asignacionMasivaC2}">Asignacion masiva C2</a>
+            </div>
+        </div>
+
+        <div class="tabla-wrapper" th:if="${not #lists.isEmpty(workshops)}">
+            <table>
+                <thead><tr><th th:text="#{workshops.colWorkshop}">Workshop</th><th th:text="#{workshops.banda}">Banda de años</th><th th:text="#{workshops.colDocenteAsignado}">Docente asignado</th><th th:text="#{workshops.colAlumnos}">Alumnos</th><th th:text="#{workshops.colHorario}">Horario</th><th th:text="#{workshops.colAsignarDocente}">Asignar docente</th></tr></thead>
+                <tbody>
+                <tr th:each="w : ${workshops}" th:with="docenteActual=${docentePorWorkshop.get(w.id)}">
+                    <td data-label="Workshop" th:text="${w.nombre}">-</td>
+                    <td data-label="Banda" th:text="${w.banda.name() == 'ANIOS_1_A_3'} ? #{workshops.banda.1a3} : #{workshops.banda.4a6}">-</td>
+                    <td data-label="Docente asignado">
+                        <span class="chip chip-verde" th:if="${docenteActual != null}" th:text="${docenteActual}">-</span>
+                        <span class="chip chip-gris" th:if="${docenteActual == null}" th:text="#{workshops.sinAsignar}">Sin asignar</span>
+                    </td>
+                    <td data-label="Alumnos">
+                        <span class="texto-secundario" th:text="'C1: ' + ${cantidadC1.get(w.id)} + ' · C2: ' + ${cantidadC2.get(w.id)}">C1: 0 · C2: 0</span><br/>
+                        <a th:href="@{/workshops/{id}/alumnos(id=${w.id})}" class="btn btn-ghost compacto" th:text="#{workshops.verAlumnos}">Ver alumnos</a>
+                    </td>
+                    <td data-label="Horario">
+                        <a th:href="@{/workshops/{id}/horario(id=${w.id})}" class="btn btn-ghost compacto" th:text="#{workshops.gestionarHorario}">Gestionar horario</a>
+                    </td>
+                    <td data-label="Asignar docente">
+                        <form th:if="${not #lists.isEmpty(docentesDisponibles)}" th:action="@{/workshops/{id}/docente(id=${w.id})}" method="post"
+                              style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <select name="docenteId" style="max-width:240px">
+                                <option th:each="d : ${docentesDisponibles}" th:value="${d.id}" th:text="${d.nombreCompleto}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-secondary compacto" th:text="#{horarios.asignar}">Asignar</button>
+                        </form>
+                        <span class="texto-secundario" th:if="${#lists.isEmpty(docentesDisponibles)}" th:text="#{workshops.sinDocentesDisponibles}">No hay docentes disponibles</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="estado-vacio" th:if="${#lists.isEmpty(workshops)}"><h3 th:text="#{workshops.vacioCatalogo}">No hay workshops activos en el catalogo</h3></div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

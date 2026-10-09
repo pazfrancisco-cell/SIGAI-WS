@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(titulo='Carga de Calificaciones')}"></head>
+<body>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="content">
+        <div th:replace="~{fragments/toasts :: toasts}"></div>
+        <div class="breadcrumb" th:text="#{nav.calificaciones}">Calificaciones</div>
+        <h1 th:text="#{calificaciones.cargar.h1}">Carga de Calificaciones</h1>
+
+        <form method="get" th:action="@{/calificaciones/cargar}" class="filtros-bar">
+            <div class="form-group">
+                <label th:text="#{common.materia}">Materia</label>
+                <select name="materiaId" onchange="this.form.submit()">
+                    <option value="">-</option>
+                    <option th:each="m : ${materias}" th:value="${m.id}" th:text="${m.nombre}" th:selected="${m.id == materiaSeleccionada}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{common.cursoDivision}">Curso/Division</label>
+                <select name="cursoDivisionId" onchange="this.form.submit()">
+                    <option value="">-</option>
+                    <option th:each="cd : ${cursosDivisiones}" th:value="${cd.id}" th:text="${cd.nombreCompleto}" th:selected="${cd.id == divisionSeleccionada}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:text="#{alumnos.legajo.cuatrimestre}">Cuatrimestre</label>
+                <select name="cuatrimestre" onchange="this.form.submit()">
+                    <option value="1" th:selected="${cuatrimestre == 1}" th:text="#{calificaciones.cuatrimestre1}">1° Cuatrimestre</option>
+                    <option value="2" th:selected="${cuatrimestre == 2}" th:text="#{calificaciones.cuatrimestre2}">2° Cuatrimestre</option>
+                </select>
+            </div>
+        </form>
+
+        <div th:if="${materiaSeleccionada != null and divisionSeleccionada != null}">
+            <div class="card">
+                <h3 th:text="#{calificaciones.nuevaEvaluacion}">+ Nueva Evaluacion</h3>
+                <form th:action="@{/calificaciones/evaluacion}" th:object="${evaluacionForm}" method="post" class="form-row" style="align-items:flex-end">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="materiaId" th:value="${materiaSeleccionada}"/>
+                    <input type="hidden" name="cursoDivisionId" th:value="${divisionSeleccionada}"/>
+                    <input type="hidden" name="cuatrimestre" th:value="${cuatrimestre}"/>
+                    <div class="form-group">
+                        <label th:text="#{calificaciones.tipoRequerido}">Tipo*</label>
+                        <select name="tipo">
+                            <option value="PRUEBA_ESCRITA" th:text="#{calificaciones.tipo.pruebaEscrita}">Prueba Escrita</option>
+                            <option value="EVALUACION_ORAL" th:text="#{calificaciones.tipo.evaluacionOral}">Evaluacion Oral</option>
+                            <option value="TRABAJO_PRACTICO" th:text="#{calificaciones.tipo.trabajoPractico}">Trabajo Practico</option>
+                            <option value="EVALUACION_CONCEPTUAL" th:text="#{calificaciones.tipo.evaluacionConceptual}">Evaluacion Conceptual</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label th:text="#{calificaciones.tituloRequerido}">Titulo*</label><input type="text" name="titulo" th:placeholder="#{calificaciones.tituloPlaceholder}" placeholder="Ej: Prueba Unidad 3"/></div>
+                    <div class="form-group"><label th:text="#{calificaciones.fechaRequerido}">Fecha*</label><input type="date" name="fecha"/></div>
+                    <button type="submit" class="btn btn-primary compacto" th:text="#{calificaciones.agregarEvaluacion}">Agregar Evaluacion</button>
+                </form>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(evaluaciones)}">
+                <h2 th:text="#{calificaciones.planillaNotas}">Planilla de notas</h2>
+                <div class="tabla-wrapper">
+                    <table class="tabla-grilla con-columna-fija">
+                        <thead>
+                        <tr>
+                            <th th:text="#{calificaciones.colAlumno}">Alumno</th>
+                            <th th:each="ev : ${evaluaciones}">
+                                <div th:text="${ev.titulo}">Evaluacion</div>
+                                <div class="texto-secundario" style="font-weight:400;color:rgba(255,255,255,.75)"
+                                     th:text="${#temporals.format(ev.fecha,'dd/MM')} + ' · ' + ${ev.tipo}">14/08 · Escrita</div>
+                                <div style="display:flex;gap:6px;justify-content:center;margin-top:6px;font-weight:400">
+                                    <button type="button" class="btn-icon" style="width:34px;height:34px"
+                                            th:attr="data-editar-evaluacion-id=${ev.id},data-editar-evaluacion-titulo=${ev.titulo},data-editar-evaluacion-tipo=${ev.tipo},data-editar-evaluacion-fecha=${#temporals.format(ev.fecha,'yyyy-MM-dd')}"
+                                            th:title="#{calificaciones.editarEvaluacion}" title="Editar evaluacion">&#9998;</button>
+                                    <form th:action="@{/calificaciones/evaluacion/{id}/eliminar(id=${ev.id})}" method="post"
+                                          th:attr="data-confirm=#{calificaciones.confirmEliminarEval}" data-confirm="¿Eliminar esta evaluacion? Se perderan todas las notas cargadas en ella."
+                                          style="display:inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" name="materiaId" th:value="${materiaSeleccionada}"/>
+                                        <input type="hidden" name="cursoDivisionId" th:value="${divisionSeleccionada}"/>
+                                        <input type="hidden" name="cuatrimestre" th:value="${cuatrimestre}"/>
+                                        <button type="submit" class="btn-icon" style="width:34px;height:34px;color:var(--rojo-critico)"
+                                                th:title="#{calificaciones.eliminarEvaluacion}" title="Eliminar evaluacion">&#128465;</button>
+                                    </form>
+                                </div>
+                            </th>
+                            <th th:text="#{calificaciones.colPromedio}">Promedio</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="alumno : ${alumnos}">
+                            <td data-label="Alumno" th:text="${alumno.nombreCompleto}">-</td>
+                            <td th:each="ev : ${evaluaciones}"
+                                th:text="${notasPorAlumno.get(alumno.id).get(ev.id)} ?: '—'">-</td>
+                            <td th:with="prom=${promedios.get(alumno.id)}">
+                                <span class="promedio" th:if="${prom != null}" th:text="${prom}"
+                                      th:classappend="${prom lt 6} ? 'bajo' : (${prom ge 8} ? 'alto' : '')">-</span>
+                                <span th:if="${prom == null}">—</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="page-header" style="margin-top:24px;margin-bottom:8px">
+                    <h3 style="margin:0" th:text="#{calificaciones.cargarNotasEval}">Cargar notas de una evaluacion</h3>
+                    <span class="texto-secundario" id="estado-autoguardado-global" th:text="#{calificaciones.autoguardadoHint}">Cada nota se guarda automaticamente al salir del campo.</span>
+                </div>
+                <form id="form-notas" th:action="@{/calificaciones/cargar}" method="post">
+                    <input type="hidden" id="csrf-token" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="materiaId" th:value="${materiaSeleccionada}"/>
+                    <input type="hidden" name="cursoDivisionId" th:value="${divisionSeleccionada}"/>
+                    <input type="hidden" name="cuatrimestre" th:value="${cuatrimestre}"/>
+                    <div class="form-group" style="max-width:320px">
+                        <label th:text="#{calificaciones.colEvaluacion}">Evaluacion</label>
+                        <select id="evaluacionId" name="evaluacionId">
+                            <option th:each="ev : ${evaluaciones}" th:value="${ev.id}" th:text="${ev.titulo + ' (' + #temporals.format(ev.fecha,'dd/MM') + ')'}"></option>
+                        </select>
+                    </div>
+                    <div class="tabla-wrapper">
+                        <table class="tabla-grilla">
+                            <thead><tr><th th:text="#{calificaciones.colAlumno}">Alumno</th><th th:text="#{calificaciones.colNota}">Nota (1-10)</th></tr></thead>
+                            <tbody>
+                            <tr th:each="alumno, iter : ${alumnos}">
+                                <td data-label="Alumno" th:text="${alumno.nombreCompleto}">-</td>
+                                <td>
+                                    <input type="hidden" th:name="|items[${iter.index}].alumnoId|" th:value="${alumno.id}"/>
+                                    <input type="text" class="input-nota-autosave valor-numerico" th:data-alumno-id="${alumno.id}"
+                                           th:name="|items[${iter.index}].valor|" placeholder="—"
+                                           style="width:74px;height:48px;font-size:19px;text-align:center"/>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" class="btn btn-secondary" style="margin-top:12px" th:text="#{calificaciones.guardarTodas}">Guardar Todas (respaldo sin autoguardado)</button>
+                </form>
+            </div>
+            <div class="estado-vacio" th:if="${#lists.isEmpty(evaluaciones)}">
+                <h3 th:text="#{calificaciones.vacioEvaluaciones}">No hay evaluaciones cargadas para este cuatrimestre</h3>
+            </div>
+
+            <div class="modal-overlay" id="modal-editar-evaluacion" style="display:none">
+                <div class="modal-card">
+                    <h3 th:text="#{calificaciones.editarEvaluacion}">Editar evaluacion</h3>
+                    <form th:action="@{/calificaciones/evaluacion/editar}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="evaluacionId" id="editar-evaluacion-id"/>
+                        <input type="hidden" name="materiaId" th:value="${materiaSeleccionada}"/>
+                        <input type="hidden" name="cursoDivisionId" th:value="${divisionSeleccionada}"/>
+                        <input type="hidden" name="cuatrimestre" th:value="${cuatrimestre}"/>
+                        <div class="form-group">
+                            <label th:text="#{alumnos.legajo.tipo}">Tipo</label>
+                            <select name="tipo" id="editar-evaluacion-tipo">
+                                <option value="PRUEBA_ESCRITA" th:text="#{calificaciones.tipo.pruebaEscrita}">Prueba Escrita</option>
+                                <option value="EVALUACION_ORAL" th:text="#{calificaciones.tipo.evaluacionOral}">Evaluacion Oral</option>
+                                <option value="TRABAJO_PRACTICO" th:text="#{calificaciones.tipo.trabajoPractico}">Trabajo Practico</option>
+                                <option value="EVALUACION_CONCEPTUAL" th:text="#{calificaciones.tipo.evaluacionConceptual}">Evaluacion Conceptual</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label th:text="#{calificaciones.titulo}">Titulo</label><input type="text" name="titulo" id="editar-evaluacion-titulo"/></div>
+                        <div class="form-group"><label th:text="#{alumnos.legajo.colFecha}">Fecha</label><input type="date" name="fecha" id="editar-evaluacion-fecha"/></div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" id="btn-cancelar-editar-evaluacion" th:text="#{accion.cancelar}">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" th:text="#{calificaciones.guardarCambios}">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
