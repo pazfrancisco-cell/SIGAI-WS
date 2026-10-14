@@ -86,28 +86,8 @@ CREATE TABLE parametro_academico (
     actualizado_por                 NVARCHAR(120) NULL
 );
 
--- Configuracion SMTP institucional (fila unica, id=1). El password se guarda cifrado
--- a nivel aplicacion (ver EncryptedStringConverter), nunca en texto plano.
-CREATE TABLE configuracion_smtp (
-    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
-    host                NVARCHAR(200) NOT NULL,
-    puerto              INT NOT NULL DEFAULT 587,
-    usuario             NVARCHAR(200) NULL,
-    password_cifrado    NVARCHAR(512) NULL,
-    usa_auth            BIT NOT NULL DEFAULT 1,
-    usa_starttls        BIT NOT NULL DEFAULT 1,
-    actualizado_en      DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    actualizado_por     NVARCHAR(120) NULL
-);
-
--- Plantillas de notificaciones automaticas con variables dinamicas (seccion 5.14.2).
-CREATE TABLE plantilla_email (
-    id          BIGINT IDENTITY(1,1) PRIMARY KEY,
-    codigo      VARCHAR(60) NOT NULL UNIQUE, -- ej: UMBRAL_10_FALTAS, FIRMA_GENERADA
-    asunto      NVARCHAR(200) NOT NULL,
-    cuerpo      NVARCHAR(MAX) NOT NULL,
-    activa      BIT NOT NULL DEFAULT 1
-);
+-- configuracion_smtp y plantilla_email se crean en V16 (antes estaban duplicadas aca,
+-- lo que hacia fallar V16 en una instalacion desde cero).
 
 -- Estructura del dia escolar (seccion 5.5.2): periodos, recreos, almuerzo, configurable.
 CREATE TABLE periodo_horario (
